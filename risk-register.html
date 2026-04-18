@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm-to-Table Network — Risk Register</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #ffffff;
+    --bg2:      #f8f9fa;
+    --bg3:      #f1f3f5;
+    --text:     #1a1a1a;
+    --text2:    #555;
+    --text3:    #888;
+    --border:   #e0e0e0;
+    --border2:  #c8c8c8;
+    --green:    #2e5c1e;
+    --green2:   #4a7c2f;
+    --radius:   8px;
+  }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; }
+
+  /* Header */
+  .page-header { background: var(--green); color: white; padding: 24px 32px 20px; border-bottom: 3px solid var(--green2); }
+  .page-header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .page-header p  { font-size: 13px; opacity: 0.85; }
+  .header-meta { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+  .header-meta span { font-size: 12px; opacity: 0.9; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; }
+
+  /* Body */
+  .page-body { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; }
+  .stat-val { font-size: 22px; font-weight: 600; }
+  .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* Toolbar */
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; }
+  .toolbar label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .toolbar select, .toolbar input { font-size: 12px; padding: 6px 10px; border: 1px solid var(--border2); border-radius: 6px; background: var(--bg); color: var(--text); outline: none; }
+  .toolbar select:focus, .toolbar input:focus { border-color: var(--green2); }
+  .tsep { width: 1px; height: 20px; background: var(--border); }
+  .tbtn { font-size: 12px; padding: 6px 12px; border: 1px solid var(--border2); border-radius: 6px; cursor: pointer; background: var(--bg); color: var(--text2); }
+  .tbtn:hover { background: var(--bg3); }
+
+  /* Risk cards grid */
+  .risk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+
+  /* Risk card */
+  .risk-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: box-shadow 0.15s; cursor: pointer; }
+  .risk-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .risk-card.hidden { display: none; }
+
+  .card-top { padding: 12px 14px 10px; border-bottom: 1px solid var(--border); }
+  .card-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .card-id { font-size: 11px; color: var(--text3); font-weight: 500; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; flex: 1; }
+  .card-badges { display: flex; gap: 5px; flex-wrap: wrap; flex-shrink: 0; }
+
+  .card-body { padding: 10px 14px; font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .card-body .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); font-weight: 600; margin-top: 8px; margin-bottom: 2px; }
+  .card-body .label:first-child { margin-top: 0; }
+  .card-body .value { color: var(--text); font-size: 12px; }
+
+  .card-footer { padding: 8px 14px; background: var(--bg2); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-footer .owner { font-size: 11px; color: var(--text3); }
+  .card-footer .date  { font-size: 11px; color: var(--text3); }
+
+  /* Badges */
+  .badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+  .badge-critical  { background: #fcebeb; color: #a32d2d; }
+  .badge-high      { background: #faeeda; color: #854F0B; }
+  .badge-medium    { background: #e6f1fb; color: #185FA5; }
+  .badge-low       { background: #eaf3de; color: #3B6D11; }
+  .badge-open      { background: #fcebeb; color: #a32d2d; }
+  .badge-mitigated { background: #eaf3de; color: #3B6D11; }
+  .badge-closed    { background: #f1f3f5; color: #555; }
+  .badge-escalated { background: #f3e8ff; color: #6b21a8; }
+  .badge-monitoring{ background: #faeeda; color: #854F0B; }
+  .badge-ws        { background: #e6f1fb; color: #185FA5; }
+
+  /* Severity bar */
+  .sev-bar { height: 4px; border-radius: 0 0 0 0; }
+  .sev-critical { background: #a32d2d; }
+  .sev-high     { background: #BA7517; }
+  .sev-medium   { background: #185FA5; }
+  .sev-low      { background: #3B6D11; }
+
+  /* Risk matrix */
+  .matrix-section { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px; }
+  .matrix-section h3 { font-size: 13px; font-weight: 600; color: var(--green); margin-bottom: 12px; }
+  .matrix-wrap { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+  .matrix-grid { display: grid; grid-template-columns: 40px repeat(4, 60px); grid-template-rows: repeat(4, 48px) 24px; gap: 3px; }
+  .m-cell { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; border-radius: 4px; }
+  .m-label { font-size: 10px; color: var(--text3); font-weight: 500; }
+  .m-ll { background: #eaf3de; color: #3B6D11; }
+  .m-lm { background: #e6f1fb; color: #185FA5; }
+  .m-lh { background: #faeeda; color: #854F0B; }
+  .m-lc { background: #faeeda; color: #854F0B; }
+  .m-ml { background: #e6f1fb; color: #185FA5; }
+  .m-mm { background: #faeeda; color: #854F0B; }
+  .m-mh { background: #fcebeb; color: #a32d2d; }
+  .m-mc { background: #fcebeb; color: #a32d2d; }
+  .m-hl { background: #faeeda; color: #854F0B; }
+  .m-hm { background: #fcebeb; color: #a32d2d; }
+  .m-hh { background: #fcebeb; color: #a32d2d; }
+  .m-hc { background: #a32d2d; color: white; }
+  .m-dot { width: 18px; height: 18px; border-radius: 50%; background: var(--green); color: white; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+  .matrix-legend { font-size: 11px; color: var(--text2); line-height: 1.8; }
+  .matrix-legend strong { color: var(--text); }
+
+  /* No results */
+  .no-results { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; display: none; }
+
+  /* Footer */
+  .page-footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text3); border-top: 1px solid var(--border); margin-top: 24px; }
+  .page-footer a { color: var(--green2); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(3,1fr); }
+    .page-header { padding: 16px; }
+    .page-body { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>Regional Farm-to-Table Food Network</h1>
+  <p>Risk Register — Multi-Enterprise SaaS Implementation Project</p>
+  <div class="header-meta">
+    <span>Feb 1 – Apr 1, 2026</span>
+    <span>4 Enterprises · 8 Organizations</span>
+    <span>10 Unique Roles</span>
+    <span>Last reviewed: Apr 2026</span>
+  </div>
+</header>
+
+<div class="page-body">
+
+  <div class="stats" id="stats"></div>
+
+  <!-- Risk Matrix -->
+  <div class="matrix-section">
+    <h3>Risk Probability / Impact Matrix</h3>
+    <div class="matrix-wrap">
+      <div>
+        <div class="matrix-grid" id="matrix"></div>
+      </div>
+      <div class="matrix-legend">
+        <strong>How to read this matrix</strong><br>
+        Each risk is plotted by Probability (rows) × Impact (columns).<br>
+        Click a numbered dot to jump to that risk card below.<br><br>
+        <strong>Probability:</strong> High (likely), Medium (possible), Low (unlikely)<br>
+        <strong>Impact:</strong> Low · Medium · High · Critical<br><br>
+        Risks in the top-right corner (red) are highest priority.<br>
+        Risks in the bottom-left (green) require only monitoring.
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <label>Severity:</label>
+    <select id="f-sev">
+      <option value="all">All severities</option>
+      <option value="Critical">Critical</option>
+      <option value="High">High</option>
+      <option value="Medium">Medium</option>
+      <option value="Low">Low</option>
+    </select>
+    <div class="tsep"></div>
+    <label>Status:</label>
+    <select id="f-status">
+      <option value="all">All statuses</option>
+      <option value="Open">Open</option>
+      <option value="Monitoring">Monitoring</option>
+      <option value="Mitigated">Mitigated</option>
+      <option value="Escalated">Escalated</option>
+      <option value="Closed">Closed</option>
+    </select>
+    <div class="tsep"></div>
+    <label>Workstream:</label>
+    <select id="f-ws">
+      <option value="all">All workstreams</option>
+      <option value="Foundation">Foundation</option>
+      <option value="Farm">Farm</option>
+      <option value="Inspection">Inspection</option>
+      <option value="Distribution">Distribution</option>
+      <option value="Retail">Retail</option>
+      <option value="Integration">Integration</option>
+      <option value="Cross-Enterprise">Cross-Enterprise</option>
+      <option value="QA">QA</option>
+    </select>
+    <div class="tsep"></div>
+    <label>Search:</label>
+    <input type="text" id="f-search" placeholder="Search risks..." style="width:160px">
+    <button class="tbtn" onclick="resetFilters()">Reset</button>
+  </div>
+
+  <div class="risk-grid" id="risk-grid"></div>
+  <div class="no-results" id="no-results">No risks match your filters.</div>
+
+</div>
+
+<footer class="page-footer">
+  Regional Farm-to-Table Food Network &nbsp;|&nbsp; Multi-Enterprise SaaS Implementation Project &nbsp;|&nbsp;
+  <a href="https://lanreyusuff.com" target="_blank">lanreyusuff.com</a>
+</footer>
+
+<script>
+const RISKS = [
+  {
+    id: 'R-01', title: 'Merge conflicts on shared files',
+    ws: 'Cross-Enterprise', severity: 'Critical', status: 'Mitigated',
+    probability: 'High', impact: 'Critical',
+    description: 'ConfigureABusiness.java, WorkRequest.java, MainFrame.java, and StatusConstants.java are edited by all 4 team members simultaneously. Without coordination, concurrent edits cause merge conflicts that break the build for everyone.',
+    trigger: 'Two or more members push changes to the same shared file on the same day without pulling first.',
+    mitigation: 'Establish a strict pull-before-push rule. Assign a single owner per shared file. Use feature branches and PR reviews for all changes to shared classes. Coordinate pushes via team chat.',
+    contingency: 'If a conflict occurs: the file owner resolves it within 2 hours. Other members hold their pushes until resolved.',
+    owner: 'All members', reviewed: 'Feb 2026', matPos: {row:0, col:3}
+  },
+  {
+    id: 'R-02', title: 'Sync point delay blocks downstream enterprise',
+    ws: 'Cross-Enterprise', severity: 'Critical', status: 'Mitigated',
+    probability: 'High', impact: 'High',
+    description: 'HarvestBatch.java (Farm → Inspection), Certification.java (Inspection → Distribution), and ShipmentReceiptConfirmation.java (Distribution → Retail) are hard dependencies. If any sync point is delayed, the receiving team is blocked with nothing to build.',
+    trigger: 'A sync point class is not pushed by the agreed date. Dependency: 2.1 → 3.1 → 4.1 → 4.2 → 5.3.',
+    mitigation: 'Define and communicate sync point deadlines explicitly. Each sync point owner notifies the blocked team 24 hours in advance if at risk. Blocked team writes a stub class with the same name and empty body to keep their code compiling.',
+    contingency: 'Stub pattern: public class HarvestBatch {} — allows dependent code to compile while the real class is finished.',
+    owner: 'Cross-team', reviewed: 'Feb 2026', matPos: {row:0, col:2}
+  },
+  {
+    id: 'R-03', title: 'Inline status strings instead of StatusConstants',
+    ws: 'Cross-Enterprise', severity: 'High', status: 'Monitoring',
+    probability: 'High', impact: 'Medium',
+    description: 'If any team member hardcodes status strings like "Passed" or "Submitted" instead of using StatusConstants.PASSED, status comparisons silently fail. The bug is hard to trace because everything compiles — it only surfaces at runtime.',
+    trigger: 'A panel or request class uses a string literal for status instead of the StatusConstants constant.',
+    mitigation: 'Code review checklist includes StatusConstants audit. Final QA phase includes a grep for inline status strings across all .java files.',
+    contingency: 'Run: grep -r "\\"Passed\\"\\|\\"Failed\\"\\|\\"Submitted\\"" src/ to catch violations before demo.',
+    owner: 'QA lead', reviewed: 'Feb 2026', matPos: {row:0, col:1}
+  },
+  {
+    id: 'R-04', title: 'Application fails to launch on demo machine',
+    ws: 'Integration', severity: 'Critical', status: 'Monitoring',
+    probability: 'Medium', impact: 'Critical',
+    description: 'The demo runs on a specific machine with a specific JDK version. If the project was developed on Java 21 but the demo machine has a different version, or if nbproject/private/ settings point to a local path that does not exist on the demo machine, the app will not compile or launch.',
+    trigger: 'JDK mismatch, missing Faker jar, or machine-specific NetBeans settings committed to the repo.',
+    mitigation: 'Fix pom.xml to target Java 21 LTS. Remove nbproject/private/ via .gitignore. Test the full build on a clean machine 48 hours before demo. Keep a backup JAR export.',
+    contingency: 'Export a runnable JAR from NetBeans before the demo. If the IDE fails, run: java -jar FarmToTableNetwork.jar',
+    owner: 'Integration lead', reviewed: 'Mar 2026', matPos: {row:1, col:3}
+  },
+  {
+    id: 'R-05', title: 'NullPointerException during live demo',
+    ws: 'QA', severity: 'High', status: 'Monitoring',
+    probability: 'Medium', impact: 'High',
+    description: 'Any panel action that calls .getX() on a null object — a null selected row, a null directory result, or a null profile after login — throws a NullPointerException and crashes the visible demo flow during a live stakeholder presentation.',
+    trigger: 'User clicks a button without selecting a table row. A directory returns null for a findById() call. A profile is null after failed login.',
+    mitigation: 'Every button handler starts with: if (selected == null) return; All directory find methods null-check before calling methods on the result. Login panel checks for null account before routing.',
+    contingency: 'Pre-populate seed data so every table always has at least one row. Practice the demo path — never deviate from the rehearsed sequence.',
+    owner: 'QA lead', reviewed: 'Mar 2026', matPos: {row:1, col:2}
+  },
+  {
+    id: 'R-06', title: 'Team member unable to attend presentation',
+    ws: 'Cross-Enterprise', severity: 'High', status: 'Open',
+    probability: 'Low', impact: 'Critical',
+    description: 'The review panel requires all team members to answer Q&A questions about any part of the project. If a member is absent, the team cannot demonstrate individual understanding across all workstreams.',
+    trigger: 'Illness, travel, or technical issue prevents a team member from attending the 30-minute presentation.',
+    mitigation: 'All members review each other\'s code sections, not just their own. Each member can explain the full demo story end-to-end. Schedule a full team rehearsal 3 days before the presentation.',
+    contingency: 'If remote attendance is possible, join via video call. Prepare a written summary of each member\'s contribution as backup evidence.',
+    owner: 'All members', reviewed: 'Mar 2026', matPos: {row:2, col:3}
+  },
+  {
+    id: 'R-07', title: 'CardLayout navigation breaks — back button loops',
+    ws: 'Integration', severity: 'High', status: 'Monitoring',
+    probability: 'Medium', impact: 'High',
+    description: 'The CardSequencePanel push/pop pattern requires careful management. If a panel is added with a duplicate key, or popPanel() is called on a panel not in the stack, the CardLayout shows a blank panel or throws an exception during the demo.',
+    trigger: 'Two panels added with the same name string. popPanel() called when the stack has only one panel. Panel added to wrong CardPanel instance.',
+    mitigation: 'CardSequencePanel.pushPanel() uses System.nanoTime() as a unique key — no collisions possible. All panels use the same cardPanel reference passed via constructor. Back buttons always call popPanel(this).',
+    contingency: 'If navigation breaks during demo: log out and log back in to reset the card stack. Show the login flow as a recovery step.',
+    owner: 'Integration lead', reviewed: 'Mar 2026', matPos: {row:1, col:2}
+  },
+  {
+    id: 'R-08', title: 'Faker library not available at runtime',
+    ws: 'Foundation', severity: 'Medium', status: 'Mitigated',
+    probability: 'Low', impact: 'High',
+    description: 'java-faker is a Maven dependency. If the dependency is not in pom.xml, or if Maven has not downloaded it, ConfigureABusiness.configure() throws a ClassNotFoundException and the app crashes before the login screen appears.',
+    trigger: 'pom.xml missing the Faker dependency. Maven not run before demo. Offline environment without cached .m2 repository.',
+    mitigation: 'Faker dependency added to pom.xml in Phase 1 setup. Run mvn install on all team machines after cloning. Commit the .m2 cache if working offline.',
+    contingency: 'Replace all faker.name().firstName() calls with hardcoded strings as a last resort. Maintain a fallback ConfigureABusiness with static strings.',
+    owner: 'Foundation lead', reviewed: 'Feb 2026', matPos: {row:2, col:2}
+  },
+  {
+    id: 'R-09', title: 'Cross-enterprise status update breaks silently',
+    ws: 'Cross-Enterprise', severity: 'High', status: 'Monitoring',
+    probability: 'Medium', impact: 'High',
+    description: 'Decision 2 states the receiving side only ever calls updateStatus(). If a receiving team member accidentally creates a new object instead of updating the existing one, the sender\'s directory still shows the old status. The bug is invisible until the demo shows stale data.',
+    trigger: 'Inventory Clerk creates a new ShipmentReceiptConfirmation instead of updating the existing one. Certifier creates a new InspectionRequest instead of updating it.',
+    mitigation: 'Code review verifies that all receiving-side panels call updateStatus() on the object retrieved from the directory. No new WorkRequest objects created on the receiving side.',
+    contingency: 'Pre-seed data at the correct final status in ConfigureABusiness so the demo does not depend on live status updates to show completed states.',
+    owner: 'Cross-team', reviewed: 'Feb 2026', matPos: {row:1, col:2}
+  },
+  {
+    id: 'R-10', title: 'Demo story data not pre-seeded correctly',
+    ws: 'QA', severity: 'High', status: 'Monitoring',
+    probability: 'Medium', impact: 'High',
+    description: 'The demo depends on ConfigureABusiness seeding data at specific status stages — a passed InspectionRequest, a certified WarehouseItem, a submitted PurchaseOrder. If any seed method produces wrong data or wrong status, the demo role login sequence fails at that step.',
+    trigger: 'seedInspection() creates an InspectionRequest at SUBMITTED instead of PASSED. seedDistribution() references a Certification that does not exist yet.',
+    mitigation: 'Each seed method is tested independently: log in as the relevant role and verify the table shows the expected data. Seed methods run in order: Farm → Inspection → Distribution → Retail.',
+    contingency: 'Keep a manual data entry fallback: if seed data is wrong, the demo operator manually creates the required entity via the UI before the relevant login step.',
+    owner: 'QA lead', reviewed: 'Mar 2026', matPos: {row:1, col:2}
+  },
+  {
+    id: 'R-11', title: 'UI inconsistency — raw Swing components used',
+    ws: 'QA', severity: 'Medium', status: 'Monitoring',
+    probability: 'Medium', impact: 'Medium',
+    description: 'If any panel uses new JButton(), new JTextField(), or hardcoded colors instead of UIFactory and UIConstants, that panel will look visually different from the rest of the app. This is immediately visible during the demo and reduces the professional impression.',
+    trigger: 'A team member creates a panel without referencing BUILD docs. New panel added late in the project without following the UIFactory pattern.',
+    mitigation: 'UIFactory audit in Phase 4 QA. Code review checklist includes: no raw new JButton(), no hardcoded Color objects, no inline font definitions.',
+    contingency: 'If inconsistency found late: update the panel to use UIFactory equivalents — this is a 5-minute fix per panel.',
+    owner: 'QA lead', reviewed: 'Mar 2026', matPos: {row:1, col:1}
+  },
+  {
+    id: 'R-12', title: 'GitHub submission incomplete or zipped',
+    ws: 'QA', severity: 'High', status: 'Open',
+    probability: 'Low', impact: 'High',
+    description: 'Project delivery requires submitting a complete project folder on GitHub — not zipped. A zipped submission or missing files means stakeholders and reviewers cannot run the code, resulting in a failed delivery acceptance.',
+    trigger: 'Team member zips the project before uploading. .gitignore accidentally excludes source files. GitHub repo is private.',
+    mitigation: 'Submission checklist reviewed 48 hours before deadline. GitHub repo set to public. One person owns the final submission step.',
+    contingency: 'If submission is wrong: GitHub can be re-pushed immediately. Notify stakeholders and resubmit within the same business day.',
+    owner: 'Submission lead', reviewed: 'Apr 2026', matPos: {row:2, col:2}
+  },
+  {
+    id: 'R-13', title: 'Organization reference passed incorrectly to WorkRequest',
+    ws: 'Cross-Enterprise', severity: 'Medium', status: 'Mitigated',
+    probability: 'Low', impact: 'Medium',
+    description: 'Every WorkRequest requires a senderOrg and receiverOrg from ConfigureABusiness static fields. If a team member passes new Organization(...) instead of the static reference, the NetworkCoordinator panel will not find the request when filtering by org, and the demo will show empty results.',
+    trigger: 'new Organization("Procurement") passed instead of ConfigureABusiness.procurement.',
+    mitigation: 'Decision confirmed: always use ConfigureABusiness.XXX org fields. Code review verifies no new Organization() calls in request constructors or panel code.',
+    contingency: 'NetworkCoordinator panel uses getAllRequests() as fallback view — still shows all requests even if org filtering fails.',
+    owner: 'All members', reviewed: 'Feb 2026', matPos: {row:2, col:1}
+  },
+  {
+    id: 'R-14', title: 'Demo time overrun — 20-minute window exceeded',
+    ws: 'QA', severity: 'Medium', status: 'Open',
+    probability: 'Medium', impact: 'Medium',
+    description: 'The presentation structure is 5 min slides + 20 min live demo + 5 min Q&A. The demo story has 9 login steps across 8 roles. If each step takes too long — due to login issues, slow UI, or explanation overruns — the demo is cut short before showing all enterprises.',
+    trigger: 'Login credentials entered incorrectly. UI navigation takes longer than rehearsed. Stakeholders ask questions mid-demo.',
+    mitigation: 'Demo rehearsed twice to confirm 20-minute timing. Login credentials printed on a reference card. Each role step has a 2-minute maximum target. Prioritize Farm → Inspection → Distribution → Retail chain over admin panels.',
+    contingency: 'If running over time: skip admin and network-level roles. Show Quality Analyst reporting panel as the closing step — it summarizes all enterprise data in one screen.',
+    owner: 'Demo lead', reviewed: 'Apr 2026', matPos: {row:1, col:1}
+  },
+];
+
+const SEV_ORDER = {Critical:0, High:1, Medium:2, Low:3};
+const STATUS_ORDER = {Open:0, Escalated:1, Monitoring:2, Mitigated:3, Closed:4};
+
+function buildStats(){
+  const el = document.getElementById('stats');
+  const total    = RISKS.length;
+  const critical = RISKS.filter(r=>r.severity==='Critical').length;
+  const high     = RISKS.filter(r=>r.severity==='High').length;
+  const open     = RISKS.filter(r=>r.status==='Open').length;
+  const monitor  = RISKS.filter(r=>r.status==='Monitoring').length;
+  const mitigated= RISKS.filter(r=>r.status==='Mitigated').length;
+  el.innerHTML = [
+    ['Total Risks',   total,    '#1b3a1b'],
+    ['Critical',      critical, '#a32d2d'],
+    ['High',          high,     '#854F0B'],
+    ['Open',          open,     '#a32d2d'],
+    ['Monitoring',    monitor,  '#854F0B'],
+    ['Mitigated',     mitigated,'#3B6D11'],
+  ].map(([l,v,c])=>`<div class="stat"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-lbl">${l}</div></div>`).join('');
+}
+
+function buildMatrix(){
+  const el = document.getElementById('matrix');
+  const ROWS_M = ['High prob','Med prob','Low prob'];
+  const COLS_M = ['Low impact','Med impact','High impact','Crit impact'];
+  const CELL_CLASS = [
+    ['m-hl','m-hm','m-hh','m-hc'],
+    ['m-ml','m-mm','m-mh','m-mc'],
+    ['m-ll','m-lm','m-lh','m-lc'],
+  ];
+
+  let html = '<div class="m-cell m-label"></div>';
+  COLS_M.forEach(c=>{ html+=`<div class="m-cell m-label" style="font-size:9px;text-align:center">${c}</div>`; });
+
+  for(let r=0;r<3;r++){
+    html+=`<div class="m-cell m-label" style="font-size:9px;writing-mode:vertical-rl;transform:rotate(180deg)">${ROWS_M[r]}</div>`;
+    for(let c=0;c<4;c++){
+      const dots = RISKS.filter(risk=>risk.matPos&&risk.matPos.row===r&&risk.matPos.col===c);
+      html+=`<div class="m-cell ${CELL_CLASS[r][c]}" style="flex-direction:column;gap:2px;flex-wrap:wrap">`;
+      dots.forEach(d=>{
+        html+=`<div class="m-dot" onclick="jumpTo('${d.id}')" title="${d.id}: ${d.title}">${d.id.replace('R-','')}</div>`;
+      });
+      html+='</div>';
+    }
+  }
+  el.innerHTML=html;
+}
+
+function buildCards(sevFilter='all', statusFilter='all', wsFilter='all', search=''){
+  const grid = document.getElementById('risk-grid');
+  const noRes = document.getElementById('no-results');
+
+  const sorted = [...RISKS].sort((a,b)=>{
+    const sd = SEV_ORDER[a.severity]-SEV_ORDER[b.severity];
+    if(sd!==0) return sd;
+    return STATUS_ORDER[a.status]-STATUS_ORDER[b.status];
+  });
+
+  let visible=0;
+  grid.innerHTML = sorted.map(r=>{
+    const show = (sevFilter==='all'||r.severity===sevFilter)
+      && (statusFilter==='all'||r.status===statusFilter)
+      && (wsFilter==='all'||r.ws===wsFilter)
+      && (search===''||r.title.toLowerCase().includes(search.toLowerCase())||r.description.toLowerCase().includes(search.toLowerCase()));
+    if(show) visible++;
+
+    const sevCls = 'badge badge-'+r.severity.toLowerCase();
+    const stsCls = 'badge badge-'+r.status.toLowerCase();
+    const barCls = 'sev-bar sev-'+r.severity.toLowerCase();
+
+    return `<div class="risk-card${show?'':' hidden'}" id="card-${r.id}">
+      <div class="${barCls}"></div>
+      <div class="card-top">
+        <div class="card-top-row">
+          <div>
+            <div class="card-id">${r.id} &nbsp;·&nbsp; ${r.ws}</div>
+            <div class="card-title">${r.title}</div>
+          </div>
+          <div class="card-badges">
+            <span class="${sevCls}">${r.severity}</span>
+            <span class="${stsCls}">${r.status}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;font-size:11px;color:var(--text3)">
+          <span>Probability: <strong style="color:var(--text)">${r.probability}</strong></span>
+          <span>·</span>
+          <span>Impact: <strong style="color:var(--text)">${r.impact}</strong></span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="label">Description</div>
+        <div class="value">${r.description}</div>
+        <div class="label">Trigger</div>
+        <div class="value">${r.trigger}</div>
+        <div class="label">Mitigation strategy</div>
+        <div class="value">${r.mitigation}</div>
+        <div class="label">Contingency plan</div>
+        <div class="value">${r.contingency}</div>
+      </div>
+      <div class="card-footer">
+        <span class="owner">Owner: ${r.owner}</span>
+        <span class="date">Reviewed: ${r.reviewed}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  noRes.style.display = visible===0 ? 'block' : 'none';
+}
+
+function jumpTo(id){
+  const card = document.getElementById('card-'+id);
+  if(card){
+    card.scrollIntoView({behavior:'smooth', block:'center'});
+    card.style.outline='2px solid var(--green2)';
+    setTimeout(()=>{ card.style.outline=''; }, 2000);
+  }
+}
+
+function resetFilters(){
+  document.getElementById('f-sev').value='all';
+  document.getElementById('f-status').value='all';
+  document.getElementById('f-ws').value='all';
+  document.getElementById('f-search').value='';
+  buildCards();
+}
+
+function applyFilters(){
+  buildCards(
+    document.getElementById('f-sev').value,
+    document.getElementById('f-status').value,
+    document.getElementById('f-ws').value,
+    document.getElementById('f-search').value
+  );
+}
+
+['f-sev','f-status','f-ws'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', applyFilters);
+});
+document.getElementById('f-search').addEventListener('input', applyFilters);
+
+buildStats();
+buildMatrix();
+buildCards();
+</script>
+</body>
+</html>
