@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm-to-Table Network — RACI Matrix</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #ffffff;
+    --bg2:     #f8f9fa;
+    --bg3:     #f1f3f5;
+    --text:    #1a1a1a;
+    --text2:   #555;
+    --text3:   #888;
+    --border:  #e0e0e0;
+    --border2: #c8c8c8;
+    --green:   #2e5c1e;
+    --green2:  #4a7c2f;
+    --radius:  8px;
+  }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; }
+
+  .page-header { background: var(--green); color: white; padding: 24px 32px 20px; border-bottom: 3px solid var(--green2); }
+  .page-header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .page-header p  { font-size: 13px; opacity: 0.85; }
+  .header-meta { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+  .header-meta span { font-size: 12px; opacity: 0.9; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; }
+
+  .page-body { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+
+  /* Legend */
+  .legend-section { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px; }
+  .legend-section h3 { font-size: 13px; font-weight: 600; color: var(--green); margin-bottom: 12px; }
+  .legend-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .legend-item { display: flex; align-items: flex-start; gap: 10px; }
+  .legend-badge { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+  .legend-text strong { font-size: 12px; display: block; color: var(--text); }
+  .legend-text span { font-size: 11px; color: var(--text3); line-height: 1.5; }
+
+  .lb-r { background: #fcebeb; color: #a32d2d; }
+  .lb-a { background: #faeeda; color: #854F0B; }
+  .lb-c { background: #e6f1fb; color: #185FA5; }
+  .lb-i { background: #eaf3de; color: #3B6D11; }
+
+  /* Role cards */
+  .roles-section { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px; }
+  .roles-section h3 { font-size: 13px; font-weight: 600; color: var(--green); margin-bottom: 12px; }
+  .roles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .role-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; }
+  .role-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .role-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .role-title { font-size: 12px; font-weight: 600; color: var(--text); }
+  .role-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; }
+  .stat-val { font-size: 20px; font-weight: 600; }
+  .stat-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+  /* Toolbar */
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; }
+  .toolbar label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .toolbar select, .toolbar input { font-size: 12px; padding: 6px 10px; border: 1px solid var(--border2); border-radius: 6px; background: var(--bg); color: var(--text); outline: none; }
+  .toolbar select:focus, .toolbar input:focus { border-color: var(--green2); }
+  .tsep { width: 1px; height: 20px; background: var(--border); }
+  .tbtn { font-size: 12px; padding: 6px 12px; border: 1px solid var(--border2); border-radius: 6px; cursor: pointer; background: var(--bg); color: var(--text2); }
+  .tbtn:hover { background: var(--bg3); }
+
+  /* RACI Table */
+  .raci-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .raci-scroll { overflow-x: auto; }
+
+  table { border-collapse: collapse; width: 100%; min-width: 1000px; }
+
+  thead tr.header-top th { font-size: 11px; font-weight: 600; padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 3; }
+  thead tr.header-top th.task-col { text-align: left; padding-left: 14px; position: sticky; left: 0; z-index: 4; }
+  thead tr.header-role th { font-size: 10px; font-weight: 600; padding: 6px 4px; text-align: center; border-bottom: 2px solid var(--border2); position: sticky; top: 32px; z-index: 3; }
+  thead tr.header-role th.task-col { text-align: left; padding-left: 14px; position: sticky; left: 0; z-index: 4; font-size: 11px; }
+
+  tbody td { font-size: 11px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
+  tbody td.task-col { text-align: left; padding: 6px 14px; position: sticky; left: 0; background: var(--bg); z-index: 1; border-right: 1px solid var(--border); min-width: 280px; max-width: 280px; }
+  tbody td.phase-col { text-align: left; padding: 6px 10px; background: var(--bg2); z-index: 1; min-width: 110px; font-size: 10px; color: var(--text3); }
+  tbody td.cat-col { font-size: 10px; color: var(--text3); min-width: 90px; }
+
+  tbody tr:hover td { background: #f0f7eb !important; }
+  tbody tr:hover td.task-col { background: #e8f4e0 !important; }
+  tbody tr.section-row td { background: var(--green) !important; color: white; font-weight: 600; font-size: 11px; }
+  tbody tr.section-row:hover td { background: var(--green2) !important; }
+  tbody tr.hidden { display: none; }
+
+  /* RACI cells */
+  .raci-cell { width: 28px; height: 24px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; cursor: help; }
+  .rc-R { background: #fcebeb; color: #a32d2d; }
+  .rc-A { background: #faeeda; color: #854F0B; }
+  .rc-C { background: #e6f1fb; color: #185FA5; }
+  .rc-I { background: #eaf3de; color: #3B6D11; }
+  .rc-empty { color: var(--text3); font-size: 11px; }
+
+  /* Tooltip */
+  #tooltip { position: fixed; display: none; z-index: 9999; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); font-size: 12px; max-width: 220px; pointer-events: none; }
+  #tooltip strong { display: block; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+  #tooltip span { color: var(--text2); line-height: 1.6; display: block; }
+
+  .page-footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text3); border-top: 1px solid var(--border); margin-top: 24px; }
+  .page-footer a { color: var(--green2); text-decoration: none; }
+
+  @media (max-width: 700px) {
+    .legend-grid { grid-template-columns: 1fr 1fr; }
+    .roles-grid { grid-template-columns: 1fr 1fr; }
+    .stats { grid-template-columns: repeat(3,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>Regional Farm-to-Table Food Network</h1>
+  <p>RACI Responsibility Matrix — Multi-Enterprise SaaS Implementation Project</p>
+  <div class="header-meta">
+    <span>Feb 1 – Apr 1, 2026</span>
+    <span>6 Roles</span>
+    <span>5 Phases · 40+ Deliverables</span>
+    <span>Hover a cell for details</span>
+  </div>
+</header>
+
+<div class="page-body">
+
+  <!-- Legend -->
+  <div class="legend-section">
+    <h3>RACI Definition</h3>
+    <div class="legend-grid">
+      <div class="legend-item">
+        <div class="legend-badge lb-r">R</div>
+        <div class="legend-text"><strong>Responsible</strong><span>Does the work. Owns the task execution. Multiple Rs can share a task.</span></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-badge lb-a">A</div>
+        <div class="legend-text"><strong>Accountable</strong><span>Signs off. Answerable for the outcome. Only one A per deliverable.</span></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-badge lb-c">C</div>
+        <div class="legend-text"><strong>Consulted</strong><span>Provides input before or during. Two-way communication required.</span></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-badge lb-i">I</div>
+        <div class="legend-text"><strong>Informed</strong><span>Kept up to date on progress. One-way communication. No action required.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role cards -->
+  <div class="roles-section">
+    <h3>Project Roles</h3>
+    <div class="roles-grid" id="role-cards"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats" id="stats"></div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <label>Phase:</label>
+    <select id="f-phase">
+      <option value="all">All phases</option>
+      <option value="Phase 1">Phase 1 — Foundation</option>
+      <option value="Phase 2">Phase 2 — Domain Build</option>
+      <option value="Phase 3">Phase 3 — Integration</option>
+      <option value="Phase 4">Phase 4 — QA</option>
+      <option value="Phase 5">Phase 5 — Documentation</option>
+    </select>
+    <div class="tsep"></div>
+    <label>Category:</label>
+    <select id="f-cat">
+      <option value="all">All categories</option>
+      <option value="Architecture">Architecture</option>
+      <option value="Domain Model">Domain Model</option>
+      <option value="UI Panels">UI Panels</option>
+      <option value="Work Requests">Work Requests</option>
+      <option value="Integration">Integration</option>
+      <option value="Seed Data">Seed Data</option>
+      <option value="QA">QA</option>
+      <option value="Documentation">Documentation</option>
+      <option value="Milestone">Milestone</option>
+    </select>
+    <div class="tsep"></div>
+    <label>Search:</label>
+    <input type="text" id="f-search" placeholder="Search deliverables..." style="width:180px">
+    <button class="tbtn" onclick="resetFilters()">Reset</button>
+  </div>
+
+  <div class="raci-wrap">
+    <div class="raci-scroll">
+      <table id="raci-table"></table>
+    </div>
+  </div>
+
+</div>
+
+<footer class="page-footer">
+  Regional Farm-to-Table Food Network &nbsp;|&nbsp; Multi-Enterprise SaaS Implementation Project &nbsp;|&nbsp;
+  <a href="https://lanreyusuff.com" target="_blank">lanreyusuff.com</a>
+</footer>
+
+<div id="tooltip"></div>
+
+<script>
+const ROLES = [
+  { id:'FL',  title:'Farm Lead',          color:'#639922', desc:'Owns Farm enterprise — Crop, HarvestBatch, Farm UI panels, HarvestSubmission work request, seedFarm()' },
+  { id:'IL',  title:'Inspection Lead',    color:'#BA7517', desc:'Owns Inspection enterprise — Certification, InspectionRequest, CertificationApproval, Inspection UI panels, seedInspection()' },
+  { id:'DL',  title:'Distribution Lead',  color:'#534AB7', desc:'Owns Distribution enterprise — WarehouseItem, DeliveryRequest, ShipmentReceiptConfirmation, Distribution UI panels, seedDistribution()' },
+  { id:'RL',  title:'Retail Lead',        color:'#D4537E', desc:'Owns Retail enterprise — PurchaseOrder, InventoryItem, Retail UI panels, seedRetail()' },
+  { id:'ITL', title:'Integration Lead',   color:'#1D9E75', desc:'Owns integration wiring — MainFrame, CardSequencePanel, Admin panels, Network-level panels, seedAuth()' },
+  { id:'QAL', title:'QA Lead',           color:'#D85A30', desc:'Owns quality assurance — end-to-end testing, null checks, StatusConstants audit, UIFactory audit, demo rehearsal' },
+];
+
+const ROLE_IDS = ROLES.map(r=>r.id);
+
+// R=Responsible, A=Accountable, C=Consulted, I=Informed, ''=not involved
+// Order: FL, IL, DL, RL, ITL, QAL
+const RACI_TOOLTIP = {
+  R: 'Responsible — executes this deliverable',
+  A: 'Accountable — signs off on this deliverable',
+  C: 'Consulted — provides input, two-way communication',
+  I: 'Informed — kept updated, one-way communication',
+};
+
+const DATA = [
+  // ── PHASE 1 ──────────────────────────────────────────────────────────────
+  { section: true, label: 'Phase 1 — Foundation & Setup  (Feb 1 – Feb 10)' },
+  { id:'1.1',  task:'pom.xml fix — Java 21, Faker dependency',              phase:'Phase 1', cat:'Architecture',  raci:['R','I','I','I','A','I'] },
+  { id:'1.2',  task:'gitignore — exclude machine-specific settings',         phase:'Phase 1', cat:'Architecture',  raci:['R','I','I','I','A','I'] },
+  { id:'1.3',  task:'18 package directories created',                        phase:'Phase 1', cat:'Architecture',  raci:['R','I','I','I','A','I'] },
+  { id:'1.4',  task:'UIFactory, UIConstants, StatusConstants',               phase:'Phase 1', cat:'Architecture',  raci:['C','C','C','C','A,R','I'] },
+  { id:'1.5',  task:'Organization.java',                                     phase:'Phase 1', cat:'Domain Model',  raci:['R','C','C','C','A','I'] },
+  { id:'1.6',  task:'Person.java',                                           phase:'Phase 1', cat:'Domain Model',  raci:['R','C','C','C','A','I'] },
+  { id:'1.7',  task:'Profile.java (abstract) — base for all 10 roles',       phase:'Phase 1', cat:'Architecture',  raci:['R','C','C','C','A','I'] },
+  { id:'1.8',  task:'UserAccount.java + UserAccountDirectory.java',          phase:'Phase 1', cat:'Architecture',  raci:['R','I','I','I','A','I'] },
+  { id:'1.9',  task:'WorkRequest.java (abstract) + WorkRequestDirectory',    phase:'Phase 1', cat:'Architecture',  raci:['R','C','C','C','A','I'] },
+  { id:'1.10', task:'Enterprise.java, Network.java, Ecosystem.java',         phase:'Phase 1', cat:'Architecture',  raci:['R','I','I','I','A','I'] },
+  { id:'1.11', task:'ConfigureABusiness.java stub + Main.java',              phase:'Phase 1', cat:'Architecture',  raci:['R','C','C','C','A','I'] },
+  { id:'M1',   task:'Milestone — Foundation complete',                       phase:'Phase 1', cat:'Milestone',     raci:['C','C','C','C','A','I'] },
+
+  // ── PHASE 2 ──────────────────────────────────────────────────────────────
+  { section: true, label: 'Phase 2 — Enterprise Domain Build  (Feb 8 – Feb 26)' },
+
+  { subsection: true, label: 'Farm / Producer Enterprise' },
+  { id:'2.1.1', task:'Crop.java + CropDirectory.java',                       phase:'Phase 2', cat:'Domain Model',  raci:['A,R','I','I','I','I','I'] },
+  { id:'2.1.2', task:'HarvestBatch.java [SYNC POINT]',                       phase:'Phase 2', cat:'Domain Model',  raci:['A,R','C','I','I','I','I'] },
+  { id:'2.1.3', task:'HarvestBatchDirectory.java',                           phase:'Phase 2', cat:'Domain Model',  raci:['A,R','I','I','I','I','I'] },
+  { id:'2.1.4', task:'HarvestSubmission.java — extends WorkRequest',         phase:'Phase 2', cat:'Work Requests', raci:['A,R','I','I','I','C','I'] },
+  { id:'2.1.5', task:'FarmerProfile.java + HarvestWorkerProfile.java',       phase:'Phase 2', cat:'Domain Model',  raci:['A,R','I','I','I','C','I'] },
+  { id:'2.1.6', task:'FarmerWorkArea.java + NewCropPanel.java',              phase:'Phase 2', cat:'UI Panels',     raci:['A,R','I','I','I','C','C'] },
+  { id:'2.1.7', task:'SubmitHarvestPanel.java',                              phase:'Phase 2', cat:'UI Panels',     raci:['A,R','I','I','I','C','C'] },
+  { id:'2.1.8', task:'HarvestWorkerWorkArea.java + CreateBatchPanel.java',   phase:'Phase 2', cat:'UI Panels',     raci:['A,R','I','I','I','C','C'] },
+  { id:'2.1.9', task:'seedFarm() — crops, batches, accounts',                phase:'Phase 2', cat:'Seed Data',     raci:['A,R','I','I','I','C','I'] },
+
+  { subsection: true, label: 'Quality & Inspection Enterprise' },
+  { id:'2.2.1', task:'Certification.java + CertificationDirectory.java [SYNC POINT]', phase:'Phase 2', cat:'Domain Model',  raci:['C','A,R','I','I','I','I'] },
+  { id:'2.2.2', task:'InspectionRequest.java — auto-creates CertApproval on Pass', phase:'Phase 2', cat:'Work Requests', raci:['C','A,R','I','I','C','I'] },
+  { id:'2.2.3', task:'CertificationApproval.java — approve() / deny()',      phase:'Phase 2', cat:'Work Requests', raci:['I','A,R','I','I','C','I'] },
+  { id:'2.2.4', task:'InspectionDirectory.java',                             phase:'Phase 2', cat:'Domain Model',  raci:['I','A,R','I','I','I','I'] },
+  { id:'2.2.5', task:'InspectorProfile.java + CertifierProfile.java',        phase:'Phase 2', cat:'Domain Model',  raci:['I','A,R','I','I','C','I'] },
+  { id:'2.2.6', task:'InspectorWorkArea.java + RecordResultPanel.java',      phase:'Phase 2', cat:'UI Panels',     raci:['I','A,R','I','I','C','C'] },
+  { id:'2.2.7', task:'CertifierWorkArea.java + IssueCertificationPanel.java',phase:'Phase 2', cat:'UI Panels',     raci:['I','A,R','I','I','C','C'] },
+  { id:'2.2.8', task:'seedInspection() + certPassFailRate()',                phase:'Phase 2', cat:'Seed Data',     raci:['C','A,R','I','I','C','I'] },
+
+  { subsection: true, label: 'Distribution / Logistics Enterprise' },
+  { id:'2.3.1', task:'WarehouseItem.java — references Certification',        phase:'Phase 2', cat:'Domain Model',  raci:['I','C','A,R','I','I','I'] },
+  { id:'2.3.2', task:'Shipment.java + WarehouseDirectory.java',              phase:'Phase 2', cat:'Domain Model',  raci:['I','I','A,R','I','I','I'] },
+  { id:'2.3.3', task:'DeliveryRequest.java — auto-creates ShipmentReceipt',  phase:'Phase 2', cat:'Work Requests', raci:['I','I','A,R','C','C','I'] },
+  { id:'2.3.4', task:'ShipmentReceiptConfirmation.java [SYNC POINT]',        phase:'Phase 2', cat:'Work Requests', raci:['I','I','A,R','C','C','I'] },
+  { id:'2.3.5', task:'ShipmentReceiptConfirmationDirectory.java',            phase:'Phase 2', cat:'Domain Model',  raci:['I','I','A,R','C','I','I'] },
+  { id:'2.3.6', task:'DeliveryDirectory.java',                               phase:'Phase 2', cat:'Domain Model',  raci:['I','I','A,R','I','I','I'] },
+  { id:'2.3.7', task:'WarehouseManagerWorkArea + ReceiveBatchPanel',         phase:'Phase 2', cat:'UI Panels',     raci:['I','C','A,R','I','C','C'] },
+  { id:'2.3.8', task:'CreateDeliveryPanel.java',                             phase:'Phase 2', cat:'UI Panels',     raci:['I','I','A,R','I','C','C'] },
+  { id:'2.3.9', task:'DeliveryDriverWorkArea.java',                          phase:'Phase 2', cat:'UI Panels',     raci:['I','I','A,R','I','C','C'] },
+  { id:'2.3.10',task:'seedDistribution() + reporting methods',               phase:'Phase 2', cat:'Seed Data',     raci:['I','C','A,R','I','C','I'] },
+
+  { subsection: true, label: 'Retail Store / Restaurant Enterprise' },
+  { id:'2.4.1', task:'PurchaseOrder.java — extends WorkRequest',             phase:'Phase 2', cat:'Work Requests', raci:['I','I','C','A,R','C','I'] },
+  { id:'2.4.2', task:'PurchaseOrderDirectory.java',                          phase:'Phase 2', cat:'Domain Model',  raci:['I','I','I','A,R','I','I'] },
+  { id:'2.4.3', task:'InventoryItem.java + InventoryDirectory.java',         phase:'Phase 2', cat:'Domain Model',  raci:['I','I','I','A,R','I','I'] },
+  { id:'2.4.4', task:'ProcurementOfficerProfile + InventoryClerkProfile',    phase:'Phase 2', cat:'Domain Model',  raci:['I','I','I','A,R','C','I'] },
+  { id:'2.4.5', task:'ProcurementOfficerWorkArea + NewOrderPanel',           phase:'Phase 2', cat:'UI Panels',     raci:['I','I','C','A,R','C','C'] },
+  { id:'2.4.6', task:'InventoryClerkWorkArea + ConfirmReceiptPanel',         phase:'Phase 2', cat:'UI Panels',     raci:['I','I','C','A,R','C','C'] },
+  { id:'2.4.7', task:'seedRetail() + totalOrdersReceived()',                 phase:'Phase 2', cat:'Seed Data',     raci:['I','I','C','A,R','C','I'] },
+  { id:'M2',    task:'Milestone — All domain builds complete',               phase:'Phase 2', cat:'Milestone',     raci:['C','C','C','C','A','I'] },
+
+  // ── PHASE 3 ──────────────────────────────────────────────────────────────
+  { section: true, label: 'Phase 3 — Integration & Cross-Enterprise Wiring  (Feb 26 – Mar 10)' },
+  { id:'3.1',  task:'NetworkCoordinator + QualityAnalyst profiles',          phase:'Phase 3', cat:'Integration',   raci:['I','I','I','I','A,R','I'] },
+  { id:'3.2',  task:'SystemAdmin + EnterpriseAdmin profiles',                phase:'Phase 3', cat:'Integration',   raci:['I','I','I','I','A,R','I'] },
+  { id:'3.3',  task:'NetworkSummary.java — 4 analytics methods',             phase:'Phase 3', cat:'Integration',   raci:['C','C','C','C','A,R','I'] },
+  { id:'3.4',  task:'NetworkCoordinatorWorkArea.java',                       phase:'Phase 3', cat:'UI Panels',     raci:['I','I','I','I','A,R','C'] },
+  { id:'3.5',  task:'QualityAnalystWorkArea.java — KPI cards + tables',      phase:'Phase 3', cat:'UI Panels',     raci:['I','I','I','I','A,R','C'] },
+  { id:'3.6',  task:'SystemAdminWorkArea + AddEditUserPanel',                phase:'Phase 3', cat:'UI Panels',     raci:['I','I','I','I','A,R','C'] },
+  { id:'3.7',  task:'EnterpriseAdminWorkArea + EnterpriseAddMemberPanel',    phase:'Phase 3', cat:'UI Panels',     raci:['I','I','I','I','A,R','C'] },
+  { id:'3.8',  task:'CardSequencePanel — pushPanel(), popPanel()',            phase:'Phase 3', cat:'Integration',   raci:['C','C','C','C','A,R','I'] },
+  { id:'3.9',  task:'MainFrame — login panel, instanceof routing (12 roles)',phase:'Phase 3', cat:'Integration',   raci:['C','C','C','C','A,R','I'] },
+  { id:'3.10', task:'seedAuth() — all admin + network-level accounts',       phase:'Phase 3', cat:'Seed Data',     raci:['C','C','C','C','A,R','I'] },
+  { id:'M3',   task:'Milestone — Integration complete',                      phase:'Phase 3', cat:'Milestone',     raci:['C','C','C','C','A','I'] },
+
+  // ── PHASE 4 ──────────────────────────────────────────────────────────────
+  { section: true, label: 'Phase 4 — QA, Testing & Demo Rehearsal  (Mar 10 – Mar 22)' },
+  { id:'4.1',  task:'End-to-end demo flow — all role login sequences',       phase:'Phase 4', cat:'QA',            raci:['C','C','C','C','C','A,R'] },
+  { id:'4.2',  task:'Null checks + error handling audit',                    phase:'Phase 4', cat:'QA',            raci:['R','R','R','R','R','A'] },
+  { id:'4.3',  task:'StatusConstants audit — no inline strings',             phase:'Phase 4', cat:'QA',            raci:['R','R','R','R','R','A'] },
+  { id:'4.4',  task:'UIFactory audit — no raw Swing components',             phase:'Phase 4', cat:'QA',            raci:['R','R','R','R','R','A'] },
+  { id:'4.5',  task:'Cross-enterprise integration test — full chain',        phase:'Phase 4', cat:'QA',            raci:['C','C','C','C','C','A,R'] },
+  { id:'4.6',  task:'User acceptance testing + demo rehearsal x2',           phase:'Phase 4', cat:'QA',            raci:['C','C','C','C','C','A,R'] },
+  { id:'M4',   task:'Milestone — QA sign-off',                              phase:'Phase 4', cat:'Milestone',     raci:['I','I','I','I','C','A'] },
+
+  // ── PHASE 5 ──────────────────────────────────────────────────────────────
+  { section: true, label: 'Phase 5 — Documentation & Delivery  (Mar 20 – Apr 1)' },
+  { id:'5.1',  task:'UML class diagrams — 5 files (shared + 4 enterprise)', phase:'Phase 5', cat:'Documentation', raci:['R','R','R','R','C','I'] },
+  { id:'5.2',  task:'High-level component diagram (.pdf)',                   phase:'Phase 5', cat:'Documentation', raci:['C','C','C','C','A,R','I'] },
+  { id:'5.3',  task:'Project proposal document',                            phase:'Phase 5', cat:'Documentation', raci:['R','R','R','R','A','I'] },
+  { id:'5.4',  task:'Presentation slides — 5-minute deck + demo script',    phase:'Phase 5', cat:'Documentation', raci:['R','R','R','R','A','C'] },
+  { id:'5.5',  task:'PM documentation — WBS, Gantt, Risk Register, RACI',   phase:'Phase 5', cat:'Documentation', raci:['I','I','I','R','A','I'] },
+  { id:'5.6',  task:'Final review — all deliverables verified',             phase:'Phase 5', cat:'Documentation', raci:['C','C','C','C','A','R'] },
+  { id:'5.7',  task:'GitHub submission — complete project folder',          phase:'Phase 5', cat:'Documentation', raci:['I','I','I','I','A,R','C'] },
+  { id:'M5',   task:'Milestone — Project delivered',                        phase:'Phase 5', cat:'Milestone',     raci:['I','I','I','I','A','C'] },
+];
+
+function buildRoleCards(){
+  const el = document.getElementById('role-cards');
+  el.innerHTML = ROLES.map(r=>`
+    <div class="role-card">
+      <div class="role-card-top">
+        <div class="role-dot" style="background:${r.color}"></div>
+        <div class="role-title">${r.title}</div>
+      </div>
+      <div class="role-desc">${r.desc}</div>
+    </div>
+  `).join('');
+}
+
+function buildStats(){
+  const tasks = DATA.filter(r=>!r.section && !r.subsection);
+  let rCount=0, aCount=0, cCount=0, iCount=0;
+  tasks.forEach(row=>{
+    row.raci.forEach(v=>{ if(v.includes('R')) rCount++; if(v.includes('A')) aCount++; if(v==='C') cCount++; if(v==='I') iCount++; });
+  });
+  document.getElementById('stats').innerHTML = [
+    ['Total deliverables', tasks.length,   '#1b3a1b'],
+    ['R assignments',      rCount,         '#a32d2d'],
+    ['A assignments',      aCount,         '#854F0B'],
+    ['C assignments',      cCount,         '#185FA5'],
+    ['I assignments',      iCount,         '#3B6D11'],
+    ['Roles',              ROLES.length,   '#534AB7'],
+  ].map(([l,v,c])=>`<div class="stat"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-lbl">${l}</div></div>`).join('');
+}
+
+function raciCell(val, role, task){
+  if(!val || val==='') return `<span class="rc-empty">·</span>`;
+  const parts = val.split(',');
+  return parts.map(v=>{
+    const cls = `rc-${v.trim()}`;
+    const tip = `${role.title}: ${RACI_TOOLTIP[v.trim()]||''}`;
+    return `<span class="raci-cell ${cls}" data-tip="${tip}" data-task="${task}" data-role="${role.title}">${v.trim()}</span>`;
+  }).join('');
+}
+
+function buildTable(phaseFilter='all', catFilter='all', search=''){
+  const table = document.getElementById('raci-table');
+
+  // Build header
+  let thead = `<tr class="header-top">
+    <th class="task-col" style="background:var(--bg2);min-width:280px">Deliverable / Work Package</th>
+    <th style="background:var(--bg2);min-width:80px">Phase</th>
+    <th style="background:var(--bg2);min-width:80px">Category</th>
+    ${ROLES.map(r=>`<th colspan="1" style="background:${r.color}1a;border-left:2px solid ${r.color};color:${r.color};min-width:80px">${r.title}</th>`).join('')}
+  </tr>`;
+
+  table.innerHTML = `<thead>${thead}</thead><tbody id="raci-body"></tbody>`;
+
+  const tbody = document.getElementById('raci-body');
+  let html = '';
+  let visible = 0;
+
+  DATA.forEach(row=>{
+    if(row.section){
+      html += `<tr class="section-row"><td class="task-col" colspan="${3+ROLES.length}">${row.label}</td></tr>`;
+      return;
+    }
+    if(row.subsection){
+      html += `<tr><td class="task-col" colspan="${3+ROLES.length}" style="background:var(--bg2);font-size:11px;font-weight:600;color:var(--green2);padding:5px 14px;border-bottom:1px solid var(--border)">▸ ${row.label}</td></tr>`;
+      return;
+    }
+
+    const matchPhase = phaseFilter==='all' || row.phase===phaseFilter;
+    const matchCat   = catFilter==='all'   || row.cat===catFilter;
+    const matchSearch= search===''         || row.task.toLowerCase().includes(search.toLowerCase());
+    const show = matchPhase && matchCat && matchSearch;
+    if(show) visible++;
+
+    const isMile = row.id && row.id.startsWith('M');
+    const rowStyle = isMile ? 'background:var(--bg3);font-weight:600;' : '';
+
+    html += `<tr class="${show?'':'hidden'}" style="${rowStyle}">
+      <td class="task-col" style="${rowStyle}">${isMile?'◆ ':''}${row.task}</td>
+      <td class="phase-col">${row.phase}</td>
+      <td class="cat-col">${row.cat}</td>
+      ${ROLES.map((role,i)=>`<td style="border-left:1px solid ${role.color}22">${raciCell(row.raci[i], role, row.task)}</td>`).join('')}
+    </tr>`;
+  });
+
+  tbody.innerHTML = html;
+  attachTooltips();
+}
+
+function attachTooltips(){
+  const tip = document.getElementById('tooltip');
+  document.querySelectorAll('.raci-cell').forEach(el=>{
+    el.addEventListener('mouseenter', e=>{
+      tip.style.display='block';
+      tip.innerHTML=`<strong>${el.dataset.role}</strong><span>${el.dataset.task}</span><span style="margin-top:4px;display:block">${el.dataset.tip}</span>`;
+    });
+    el.addEventListener('mousemove', e=>{
+      const x = e.clientX+14, y = e.clientY-10;
+      tip.style.left=(x+220>window.innerWidth?x-240:x)+'px';
+      tip.style.top=y+'px';
+    });
+    el.addEventListener('mouseleave',()=>{ tip.style.display='none'; });
+  });
+}
+
+function resetFilters(){
+  document.getElementById('f-phase').value='all';
+  document.getElementById('f-cat').value='all';
+  document.getElementById('f-search').value='';
+  buildTable();
+}
+
+function applyFilters(){
+  buildTable(
+    document.getElementById('f-phase').value,
+    document.getElementById('f-cat').value,
+    document.getElementById('f-search').value
+  );
+}
+
+['f-phase','f-cat'].forEach(id=>{ document.getElementById(id).addEventListener('change', applyFilters); });
+document.getElementById('f-search').addEventListener('input', applyFilters);
+
+buildRoleCards();
+buildStats();
+buildTable();
+</script>
+</body>
+</html>

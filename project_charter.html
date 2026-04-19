@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm-to-Table Network — Project Charter</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #ffffff;
+    --bg2:     #f8f9fa;
+    --bg3:     #f1f3f5;
+    --text:    #1a1a1a;
+    --text2:   #444;
+    --text3:   #888;
+    --border:  #e0e0e0;
+    --border2: #c8c8c8;
+    --green:   #2e5c1e;
+    --green2:  #4a7c2f;
+    --green3:  #eaf3de;
+    --radius:  8px;
+  }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; }
+
+  /* ── Cover ── */
+  .cover {
+    background: var(--green);
+    color: white;
+    padding: 40px 48px 32px;
+    border-bottom: 4px solid var(--green2);
+    position: relative;
+  }
+  .cover-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; margin-bottom: 10px; }
+  .cover h1 { font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
+  .cover h2 { font-size: 15px; font-weight: 400; opacity: 0.85; margin-bottom: 24px; }
+  .cover-meta { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: 24px; }
+  .cover-meta-item label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.65; display: block; margin-bottom: 3px; }
+  .cover-meta-item span { font-size: 13px; font-weight: 500; }
+  .cover-badge { display: inline-block; background: rgba(255,255,255,0.15); font-size: 11px; padding: 3px 10px; border-radius: 12px; margin-right: 6px; margin-top: 8px; }
+  .status-approved { background: rgba(106,191,105,0.3); color: #d4f7d4; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 12px; border: 1px solid rgba(106,191,105,0.5); display: inline-block; margin-top: 12px; }
+
+  /* ── Nav tabs ── */
+  .nav-bar { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; gap: 0; overflow-x: auto; }
+  .nav-tab { font-size: 12px; font-weight: 500; padding: 12px 18px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text3); white-space: nowrap; transition: all 0.15s; }
+  .nav-tab:hover { color: var(--green); }
+  .nav-tab.active { color: var(--green); border-bottom-color: var(--green2); }
+
+  /* ── Body ── */
+  .page-body { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── Cards ── */
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 18px; }
+  .card h3 { font-size: 13px; font-weight: 600; color: var(--green); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .card h3::before { content: ''; width: 3px; height: 14px; background: var(--green2); border-radius: 2px; display: inline-block; }
+  .card p { font-size: 13px; color: var(--text2); line-height: 1.8; margin-bottom: 10px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* ── Two col ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+
+  /* ── KPI strip ── */
+  .kpi-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; text-align: center; }
+  .kpi-val { font-size: 26px; font-weight: 700; color: var(--green); }
+  .kpi-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  /* ── Table ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th { background: var(--green); color: white; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 11px; }
+  .data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:nth-child(even) td { background: var(--bg2); }
+  .data-table tr:hover td { background: var(--green3); }
+
+  /* ── Stakeholder card ── */
+  .stakeholder-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  .stakeholder { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .stakeholder-role { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .stakeholder-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .stakeholder-resp { font-size: 11px; color: var(--text3); line-height: 1.6; }
+  .stakeholder-interest { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 8px; margin-top: 6px; font-weight: 600; }
+  .int-high { background: #fcebeb; color: #a32d2d; }
+  .int-med  { background: #faeeda; color: #854F0B; }
+  .int-low  { background: #eaf3de; color: #3B6D11; }
+
+  /* ── Sprint cards ── */
+  .sprint-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .sprint-card { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .sprint-header { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .sprint-title { font-size: 13px; font-weight: 600; color: white; }
+  .sprint-dates { font-size: 11px; color: rgba(255,255,255,0.8); }
+  .sprint-goal { font-size: 12px; color: var(--text2); padding: 10px 16px; border-bottom: 1px solid var(--border); font-style: italic; background: var(--bg2); }
+  .sprint-body { padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sprint-section label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); font-weight: 600; display: block; margin-bottom: 6px; }
+  .sprint-items { list-style: none; }
+  .sprint-items li { font-size: 11px; color: var(--text2); padding: 2px 0; display: flex; align-items: flex-start; gap: 6px; line-height: 1.5; }
+  .sprint-items li::before { content: '▸'; color: var(--green2); font-size: 9px; margin-top: 2px; flex-shrink: 0; }
+  .sprint-milestone { font-size: 11px; color: var(--text2); padding: 8px 16px; background: var(--green3); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+  .sprint-milestone::before { content: '◆'; color: var(--green2); }
+  .sprint-status { font-size: 10px; padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+  .ss-done { background: rgba(255,255,255,0.2); color: white; }
+  .ss-prog { background: rgba(255,200,0,0.3); color: #fff8cc; }
+  .ss-plan { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+
+  /* ── Risk summary ── */
+  .risk-summary { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
+  .risk-box { border-radius: var(--radius); padding: 12px 14px; text-align: center; }
+  .risk-box .rv { font-size: 22px; font-weight: 700; }
+  .risk-box .rl { font-size: 11px; margin-top: 2px; }
+  .rb-c { background: #fcebeb; color: #a32d2d; }
+  .rb-h { background: #faeeda; color: #854F0B; }
+  .rb-m { background: #e6f1fb; color: #185FA5; }
+  .rb-l { background: #eaf3de; color: #3B6D11; }
+
+  /* ── Scope list ── */
+  .scope-list { list-style: none; }
+  .scope-list li { font-size: 13px; color: var(--text2); padding: 6px 0; display: flex; align-items: flex-start; gap: 10px; line-height: 1.6; border-bottom: 1px solid var(--border); }
+  .scope-list li:last-child { border-bottom: none; }
+  .scope-list li .icon { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .in-scope  .icon { background: #eaf3de; color: #3B6D11; }
+  .out-scope .icon { background: #fcebeb; color: #a32d2d; }
+
+  /* ── Sign-off ── */
+  .signoff-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .signoff-box { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .signoff-role { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; margin-bottom: 6px; }
+  .signoff-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .signoff-line { height: 1px; background: var(--border2); margin: 16px 0 8px; }
+  .signoff-date { font-size: 11px; color: var(--text3); }
+  .signoff-status { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 8px; font-weight: 600; }
+  .sig-approved { background: #eaf3de; color: #3B6D11; }
+  .sig-pending  { background: #faeeda; color: #854F0B; }
+
+  /* ── Assumption / constraint pills ── */
+  .pill-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { font-size: 11px; padding: 5px 12px; border-radius: 16px; border: 1px solid var(--border); color: var(--text2); background: var(--bg2); }
+
+  /* ── Footer ── */
+  .page-footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text3); border-top: 1px solid var(--border); margin-top: 24px; }
+  .page-footer a { color: var(--green2); text-decoration: none; }
+
+  @media (max-width: 700px) {
+    .cover { padding: 24px 20px; }
+    .cover-meta { grid-template-columns: 1fr 1fr; }
+    .kpi-strip { grid-template-columns: repeat(3,1fr); }
+    .two-col, .three-col, .stakeholder-grid, .signoff-grid { grid-template-columns: 1fr; }
+    .sprint-body { grid-template-columns: 1fr; }
+    .page-body { padding: 16px; }
+    .nav-bar { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Cover ── -->
+<div class="cover">
+  <div class="cover-label">Project Charter · Version 1.0</div>
+  <h1>Regional Farm-to-Table Food Network</h1>
+  <h2>Multi-Enterprise SaaS Implementation Project</h2>
+  <div>
+    <span class="cover-badge">Java Swing</span>
+    <span class="cover-badge">Agile / Scrum</span>
+    <span class="cover-badge">4 Enterprises</span>
+    <span class="cover-badge">10 Unique Roles</span>
+    <span class="cover-badge">6+ Work Requests</span>
+  </div>
+  <div class="status-approved">✓ Charter Approved</div>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><label>Project start</label><span>Feb 1, 2026</span></div>
+    <div class="cover-meta-item"><label>Delivery date</label><span>Apr 1, 2026</span></div>
+    <div class="cover-meta-item"><label>Duration</label><span>5 Sprints · 59 days</span></div>
+
+  </div>
+</div>
+
+<!-- ── Nav ── -->
+<nav class="nav-bar">
+  <div class="nav-tab active" onclick="showSection('overview')">Overview</div>
+  <div class="nav-tab" onclick="showSection('scope')">Scope</div>
+  <div class="nav-tab" onclick="showSection('stakeholders')">Stakeholders</div>
+  <div class="nav-tab" onclick="showSection('sprints')">Sprint Plan</div>
+  <div class="nav-tab" onclick="showSection('risks')">Risks & Constraints</div>
+  <div class="nav-tab" onclick="showSection('success')">Success Criteria</div>
+  <div class="nav-tab" onclick="showSection('signoff')">Sign-off</div>
+</nav>
+
+<div class="page-body">
+
+  <!-- ── OVERVIEW ── -->
+  <div class="section active" id="section-overview">
+
+    <div class="kpi-strip">
+      <div class="kpi"><div class="kpi-val">4</div><div class="kpi-lbl">Enterprises</div></div>
+      <div class="kpi"><div class="kpi-val">8</div><div class="kpi-lbl">Organizations</div></div>
+      <div class="kpi"><div class="kpi-val">10</div><div class="kpi-lbl">Unique roles</div></div>
+      <div class="kpi"><div class="kpi-val">6+</div><div class="kpi-lbl">Work requests</div></div>
+      <div class="kpi"><div class="kpi-val">5</div><div class="kpi-lbl">Sprints</div></div>
+    </div>
+
+    <div class="card">
+      <h3>Problem Statement</h3>
+      <p>Regional food supply chains operate in silos. Farms, quality inspection agencies, distributors, and retailers each maintain independent systems with no shared coordination layer. The result is duplicated effort, opaque status tracking, and slow response to quality or supply issues that cross organizational boundaries.</p>
+      <p>This project solves this challenge by delivering a unified digital platform that tracks produce from planting through to retail stocking — with every status change and cross-enterprise handoff visible in real time to all authorized stakeholders.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Project Purpose & Vision</h3>
+        <p>To design and implement a <strong>Regional Farm-to-Table Food Network</strong> — a multi-enterprise communication ecosystem demonstrating that cooperative effort across independent enterprises creates greater value than any single entity operating alone.</p>
+        <p>The platform enables a complete produce journey: <strong>Plant → Harvest → Inspect → Certify → Warehouse → Order → Deliver → Stock</strong> — with every step tracked, status-managed, and visible across all four enterprises through a role-based Java Swing desktop application.</p>
+      </div>
+      <div class="card">
+        <h3>Business Justification</h3>
+        <p><strong>Efficiency:</strong> Eliminating manual handoffs between enterprises reduces coordination overhead and accelerates produce delivery timelines.</p>
+        <p><strong>Transparency:</strong> Real-time status visibility across the supply chain enables faster issue resolution — inspection failures, delivery delays, and stock shortages are surfaced immediately.</p>
+        <p><strong>Scalability:</strong> The ecosystem architecture (Ecosystem → Network → Enterprise → Organization) is designed to accommodate additional enterprises without restructuring the core platform.</p>
+        <p><strong>Compliance:</strong> Certification tracking ensures only inspected and approved produce enters the distribution and retail pipeline.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Solution Architecture</h3>
+      <p>Single-tier Java Swing desktop application. All state is held in-memory via Directory objects (ArrayList-backed) initialized at startup by <strong>ConfigureABusiness</strong> using the java-faker library for realistic seed data. The system follows a strict containment hierarchy and role-based authentication pattern.</p>
+      <table class="data-table" style="margin-top:12px">
+        <tr><th>Layer</th><th>Component</th><th>Description</th></tr>
+        <tr><td>Ecosystem</td><td>Regional Farm-to-Table Food Network</td><td>Top-level container — single instance</td></tr>
+        <tr><td>Network</td><td>Regional Distribution Network</td><td>Connective tissue linking all 4 enterprises</td></tr>
+        <tr><td>Enterprise ×4</td><td>Farm · Inspection · Distribution · Retail</td><td>Independent business units</td></tr>
+        <tr><td>Organization ×8</td><td>2 per enterprise</td><td>Operational units where work executes</td></tr>
+        <tr><td>Auth</td><td>UserAccount + Profile (abstract)</td><td>Role-based login routing 12 profiles via instanceof</td></tr>
+        <tr><td>Requests</td><td>WorkRequest (abstract) × 6 subclasses</td><td>Cross-org and cross-enterprise communication</td></tr>
+        <tr><td>UI</td><td>CardLayout + UIFactory pattern</td><td>14+ panels, consistent design system</td></tr>
+        <tr><td>Reporting</td><td>NetworkSummary analytics</td><td>KPI dashboard for Quality Analyst role</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Core Demo Story</h3>
+      <p>The end-to-end demonstration follows a batch of tomatoes through the complete supply chain, crossing enterprise and organization boundaries at every stage:</p>
+      <table class="data-table" style="margin-top:12px">
+        <tr><th>#</th><th>Login</th><th>Action</th><th>Status change</th><th>Enterprise boundary</th></tr>
+        <tr><td>1</td><td>Farm Lead</td><td>Create Tomato crop → Submit HarvestSubmission</td><td>Planted → Submitted</td><td>Within Farm</td></tr>
+        <tr><td>2</td><td>Farm Lead (HW)</td><td>Approve submission → Create HarvestBatch → Trigger InspectionRequest</td><td>Approved → Packaged</td><td>Farm → Inspection (cross-enterprise)</td></tr>
+        <tr><td>3</td><td>Inspection Lead</td><td>Claim InspectionRequest → Record Result: Passed</td><td>Assigned → Passed</td><td>Within Inspection</td></tr>
+        <tr><td>4</td><td>Inspection Lead (C)</td><td>Approve CertificationApproval → Issue Certification</td><td>Pending Review → Certified</td><td>Within Inspection</td></tr>
+        <tr><td>5</td><td>Distribution Lead</td><td>Receive certified batch → Create DeliveryRequest + Shipment</td><td>Warehoused → Requested</td><td>Inspection → Distribution (cross-enterprise)</td></tr>
+        <tr><td>6</td><td>Distribution Lead (D)</td><td>Claim delivery → Mark Delivered → auto-creates ShipmentReceiptConfirmation</td><td>Assigned → Delivered</td><td>Distribution → Retail (cross-enterprise)</td></tr>
+        <tr><td>7</td><td>Retail Lead</td><td>View Purchase Order status</td><td>Submitted → Shipped</td><td>Retail monitors</td></tr>
+        <tr><td>8</td><td>Retail Lead (IC)</td><td>Confirm Receipt → Create InventoryItem</td><td>Confirmed → Stocked</td><td>Batch fully delivered</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ── SCOPE ── -->
+  <div class="section" id="section-scope">
+
+    <div class="two-col">
+      <div class="card">
+        <h3>In Scope</h3>
+        <ul class="scope-list">
+          <li class="in-scope"><span class="icon">✓</span>Java Swing desktop application — single deployable JAR</li>
+          <li class="in-scope"><span class="icon">✓</span>Role-based authentication — 12 profiles routed via instanceof pattern</li>
+          <li class="in-scope"><span class="icon">✓</span>4 enterprise domain models with full CRUD operations</li>
+          <li class="in-scope"><span class="icon">✓</span>6 work request types — 3 cross-enterprise, 3 cross-organization</li>
+          <li class="in-scope"><span class="icon">✓</span>14+ UI panels following consistent UIFactory design system</li>
+          <li class="in-scope"><span class="icon">✓</span>Status management via StatusConstants — no inline strings</li>
+          <li class="in-scope"><span class="icon">✓</span>Pre-populated seed data via java-faker library</li>
+          <li class="in-scope"><span class="icon">✓</span>NetworkSummary reporting — KPI dashboard for Quality Analyst</li>
+          <li class="in-scope"><span class="icon">✓</span>System Admin CRUD — full account management</li>
+          <li class="in-scope"><span class="icon">✓</span>Enterprise Admin CRUD — scoped by enterpriseId</li>
+          <li class="in-scope"><span class="icon">✓</span>Form validation — required fields, email format, date regex, positive integers</li>
+          <li class="in-scope"><span class="icon">✓</span>Auto-generated unique IDs via static counters on all domain classes</li>
+          <li class="in-scope"><span class="icon">✓</span>UML class diagrams, component diagram, PM documentation package</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Out of Scope</h3>
+        <ul class="scope-list">
+          <li class="out-scope"><span class="icon">✗</span>Database persistence — all state is in-memory, resets on restart</li>
+          <li class="out-scope"><span class="icon">✗</span>Multi-user concurrent sessions — single JVM, single user at a time</li>
+          <li class="out-scope"><span class="icon">✗</span>Password encryption — plain string storage within demo scope</li>
+          <li class="out-scope"><span class="icon">✗</span>Real-time clock or scheduling — dates entered manually as strings</li>
+          <li class="out-scope"><span class="icon">✗</span>Email / SMS notifications — no external API integrations</li>
+          <li class="out-scope"><span class="icon">✗</span>Map or geolocation features</li>
+          <li class="out-scope"><span class="icon">✗</span>Partial delivery handling — PurchaseOrders fulfilled in full only</li>
+          <li class="out-scope"><span class="icon">✗</span>Re-inspection loops — failed inspections are terminal</li>
+          <li class="out-scope"><span class="icon">✗</span>Back-flow on certification denial — denied certs are terminal</li>
+          <li class="out-scope"><span class="icon">✗</span>Mobile or web interface — desktop Swing only</li>
+          <li class="out-scope"><span class="icon">✗</span>Reporting export — analytics visible on-screen only</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Key Design Decisions & Constraints</h3>
+      <table class="data-table">
+        <tr><th>Decision</th><th>Resolution</th><th>Rationale</th></tr>
+        <tr><td>Status value format</td><td>Plain String constants in StatusConstants.java — no enums</td><td>Simpler refactoring, consistent across all enterprise boundaries</td></tr>
+        <tr><td>Cross-enterprise sender / receiver</td><td>Sending side creates the request and sets initial status. Receiving side only calls updateStatus()</td><td>Clear ownership, prevents duplicate object creation</td></tr>
+        <tr><td>Quantity type boundary</td><td>HarvestBatch.quantityKg = float (raw weight). All downstream quantities = int (packaged units)</td><td>Reflects real-world handoff from raw produce to packaged goods</td></tr>
+        <tr><td>PurchaseOrder ↔ WarehouseItem coupling</td><td>PurchaseOrder stores product name (String) + qty (int) only — no WarehouseItem reference</td><td>Keeps Retail and Distribution enterprises fully decoupled at the model level</td></tr>
+        <tr><td>Inspector / Driver assignment</td><td>Self-assign via Claim button — no admin assignment panel</td><td>Reduces UI complexity, mirrors real-world field worker claim patterns</td></tr>
+        <tr><td>ConfigureABusiness org references</td><td>Always use static fields — never new Organization()</td><td>Ensures all WorkRequests reference the same org objects, enabling cross-enterprise filtering</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Assumptions</h3>
+      <div class="pill-list">
+        <span class="pill">Demo runs on a single machine with Java 21 JDK installed</span>
+        <span class="pill">All team members have access to the shared GitHub repository</span>
+        <span class="pill">java-faker dependency resolved via Maven before demo</span>
+        <span class="pill">NetBeans IDE used as the primary development environment</span>
+        <span class="pill">Seed data generated fresh on each application launch</span>
+        <span class="pill">Demo follows the scripted 8-step role login sequence</span>
+        <span class="pill">All 4 enterprise tracks available for parallel development from Sprint 2</span>
+        <span class="pill">Sync point classes pushed within 24 hours of completion</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── STAKEHOLDERS ── -->
+  <div class="section" id="section-stakeholders">
+
+    <div class="card">
+      <h3>Stakeholder Register</h3>
+      <div class="stakeholder-grid">
+
+        <div class="stakeholder">
+          <div class="stakeholder-role">Executive Sponsor</div>
+          <div class="stakeholder-title">Technology Steering Committee</div>
+          <div class="stakeholder-resp">Provides strategic direction and approves project charter. Reviews milestone delivery at each sprint gate. Final sign-off authority on project acceptance.</div>
+          <span class="stakeholder-interest int-high">High interest · High influence</span>
+        </div>
+
+        <div class="stakeholder">
+          <div class="stakeholder-role">Project Manager</div>
+          <div class="stakeholder-title">Retail Lead</div>
+          <div class="stakeholder-resp">Overall project delivery accountability. Owns PM documentation — WBS, Gantt, Risk Register, RACI, Project Charter. Manages sprint ceremonies and cross-team communication.</div>
+          <span class="stakeholder-interest int-high">High interest · High influence</span>
+        </div>
+
+        <div class="stakeholder">
+          <div class="stakeholder-role">Integration Lead</div>
+          <div class="stakeholder-title">Platform Integration</div>
+          <div class="stakeholder-resp">Owns MainFrame wiring, CardSequencePanel, admin panels, NetworkSummary, and seedAuth(). Accountable for all 12 roles routing correctly on login.</div>
+          <span class="stakeholder-interest int-high">High interest · High influence</span>
+        </div>
+
+        <div class="stakeholder">
+          <div class="stakeholder-role">Farm Lead</div>
+          <div class="stakeholder-title">Farm / Producer Enterprise</div>
+          <div class="stakeholder-resp">Owns Crop, HarvestBatch, HarvestSubmission, Farm UI panels, and seedFarm(). Responsible for repo setup and shared foundation push in Sprint 1.</div>
+          <span class="stakeholder-interest int-high">High interest · Medium influence</span>
+        </div>
+
+        <div class="stakeholder">
+          <div class="stakeholder-role">Inspection Lead</div>
+          <div class="stakeholder-title">Quality & Inspection Enterprise</div>
+          <div class="stakeholder-resp">Owns Certification, InspectionRequest, CertificationApproval, Inspection UI panels, and seedInspection(). Produces the critical Certification sync point for Distribution.</div>
+          <span class="stakeholder-interest int-high">High interest · Medium influence</span>
+        </div>
+
+        <div class="stakeholder">
+          <div class="stakeholder-role">Distribution Lead</div>
+          <div class="stakeholder-title">Distribution / Logistics Enterprise</div>
+          <div class="stakeholder-resp">Owns WarehouseItem, DeliveryRequest, ShipmentReceiptConfirmation, Distribution UI panels, and seedDistribution(). Produces the ShipmentReceiptConfirmation sync point for Retail.</div>
+          <span class="stakeholder-interest int-high">High interest · Medium influence</span>
+        </div>
+
+        <div class="stakeholder">
+          <div class="stakeholder-role">QA Lead</div>
+          <div class="stakeholder-title">Quality Assurance</div>
+          <div class="stakeholder-resp">Owns end-to-end testing, null check audit, StatusConstants audit, UIFactory audit, and demo rehearsal. Signs off on Sprint 4 QA gate before final delivery.</div>
+          <span class="stakeholder-interest int-med">Medium interest · High influence</span>
+        </div>
+
+        <div class="stakeholder">
+          <div class="stakeholder-role">End User (Demo)</div>
+          <div class="stakeholder-title">Stakeholder Review Panel</div>
+          <div class="stakeholder-resp">Reviews the live demo — 5-minute overview + 20-minute live application walkthrough + Q&A. Evaluates individual understanding of design decisions across all enterprise domains.</div>
+          <span class="stakeholder-interest int-high">High interest · High influence</span>
+        </div>
+
+        <div class="stakeholder">
+          <div class="stakeholder-role">End Users (System)</div>
+          <div class="stakeholder-title">Operational Roles (×10)</div>
+          <div class="stakeholder-resp">Farmer, Harvest Worker, Inspector, Certifier, Warehouse Manager, Delivery Driver, Procurement Officer, Inventory Clerk, Network Coordinator, Quality Analyst — each with a dedicated work area panel.</div>
+          <span class="stakeholder-interest int-med">Medium interest · Low influence</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Communication Plan</h3>
+      <table class="data-table">
+        <tr><th>Communication</th><th>Frequency</th><th>Format</th><th>Audience</th></tr>
+        <tr><td>Sprint kickoff</td><td>Start of each sprint</td><td>Team sync — goals, backlog, assignments confirmed</td><td>All leads</td></tr>
+        <tr><td>Sync point notification</td><td>24 hours before delivery</td><td>Team chat message — "X.java ready to push"</td><td>Blocked team lead</td></tr>
+        <tr><td>Sprint review / demo</td><td>End of each sprint</td><td>Working software demo to executive sponsor</td><td>All stakeholders</td></tr>
+        <tr><td>Blocker escalation</td><td>Same day as blocker identified</td><td>Team chat — ping owner with specific dependency needed</td><td>Relevant lead + Integration Lead</td></tr>
+        <tr><td>Status update</td><td>Every 3 days</td><td>GitHub commit history + updated task status</td><td>All leads</td></tr>
+        <tr><td>Final delivery notification</td><td>Apr 1, 2026</td><td>GitHub submission confirmed, all stakeholders notified</td><td>All stakeholders</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ── SPRINTS ── -->
+  <div class="section" id="section-sprints">
+
+    <div class="card" style="margin-bottom:18px">
+      <h3>Agile / Scrum Framework</h3>
+      <p>This project is delivered using a <strong>Scrum-inspired framework</strong> with 5 time-boxed sprints. Each sprint has a defined goal, a backlog of work packages drawn from the WBS, a sprint review milestone, and a retrospective. Parallel enterprise tracks in Sprint 2 reflect Scrum's cross-functional team model — each enterprise lead operates as an independent squad delivering their increment simultaneously.</p>
+      <p style="margin-top:10px">Sync points between enterprises are treated as <strong>inter-team dependencies</strong> and managed via the dependency log. Any sync point at risk triggers an immediate blocker escalation per the communication plan.</p>
+    </div>
+
+    <div class="sprint-grid">
+
+      <div class="sprint-card">
+        <div class="sprint-header" style="background:#2e5c1e">
+          <div>
+            <div class="sprint-title">Sprint 1 — Foundation & Environment Setup</div>
+            <div class="sprint-dates">Feb 1 – Feb 10, 2026 · 10 days</div>
+          </div>
+          <span class="sprint-status ss-done">Complete</span>
+        </div>
+        <div class="sprint-goal">"By the end of this sprint, the application boots, all shared classes compile, and every team member can pull and build from a clean clone."</div>
+        <div class="sprint-body">
+          <div class="sprint-section">
+            <label>Sprint backlog</label>
+            <ul class="sprint-items">
+              <li>pom.xml — Java 21 LTS, Faker dependency</li>
+              <li>.gitignore — exclude machine-specific paths</li>
+              <li>18 package directories created</li>
+              <li>UIFactory, UIConstants, StatusConstants</li>
+              <li>Organization, Person, Profile (abstract)</li>
+              <li>UserAccount + UserAccountDirectory</li>
+              <li>WorkRequest (abstract) + WorkRequestDirectory</li>
+              <li>Enterprise, Network, Ecosystem hierarchy</li>
+              <li>ConfigureABusiness stub + Main.java</li>
+            </ul>
+          </div>
+          <div class="sprint-section">
+            <label>Definition of done</label>
+            <ul class="sprint-items">
+              <li>App launches with empty directories</li>
+              <li>Login screen renders without errors</li>
+              <li>All shared classes compile on a clean clone</li>
+              <li>StatusConstants accessible from all packages</li>
+              <li>UIFactory renders a sample button correctly</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sprint-milestone">Sprint Review: Foundation complete — all 4 enterprise tracks unblocked</div>
+      </div>
+
+      <div class="sprint-card">
+        <div class="sprint-header" style="background:#1D9E75">
+          <div>
+            <div class="sprint-title">Sprint 2 — Enterprise Domain Build (4 parallel tracks)</div>
+            <div class="sprint-dates">Feb 8 – Feb 26, 2026 · 18 days</div>
+          </div>
+          <span class="sprint-status ss-done">Complete</span>
+        </div>
+        <div class="sprint-goal">"By the end of this sprint, all 4 enterprise domain models, work request classes, profile subclasses, and UI panels are functional and independently testable."</div>
+        <div class="sprint-body">
+          <div class="sprint-section">
+            <label>Sprint backlog (parallel tracks)</label>
+            <ul class="sprint-items">
+              <li>[Farm] Crop, HarvestBatch, HarvestSubmission, Farm UI panels</li>
+              <li>[Inspection] Certification, InspectionRequest, CertificationApproval, Inspection UI panels</li>
+              <li>[Distribution] WarehouseItem, DeliveryRequest, ShipmentReceiptConfirmation, Distribution UI panels</li>
+              <li>[Retail] PurchaseOrder, InventoryItem, Retail UI panels</li>
+              <li>All 10 role profile subclasses</li>
+              <li>seedFarm(), seedInspection(), seedDistribution(), seedRetail()</li>
+            </ul>
+          </div>
+          <div class="sprint-section">
+            <label>Sync point dependencies</label>
+            <ul class="sprint-items">
+              <li>HarvestBatch.java → unblocks Inspection (Feb 13)</li>
+              <li>Certification.java → unblocks Distribution (Feb 15)</li>
+              <li>ShipmentReceiptConfirmation.java → unblocks Retail (Feb 21)</li>
+              <li>Profile.java → unblocks all profile subclasses (Sprint 1)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sprint-milestone">Sprint Review: All 4 enterprise tracks compile and demonstrate basic role login</div>
+      </div>
+
+      <div class="sprint-card">
+        <div class="sprint-header" style="background:#534AB7">
+          <div>
+            <div class="sprint-title">Sprint 3 — Integration & Cross-Enterprise Wiring</div>
+            <div class="sprint-dates">Feb 26 – Mar 10, 2026 · 12 days</div>
+          </div>
+          <span class="sprint-status ss-done">Complete</span>
+        </div>
+        <div class="sprint-goal">"By the end of this sprint, all 12 roles log in successfully, all cross-enterprise request flows are connected, and the full demo story can be executed end-to-end."</div>
+        <div class="sprint-body">
+          <div class="sprint-section">
+            <label>Sprint backlog</label>
+            <ul class="sprint-items">
+              <li>Network-level profiles — NetworkCoordinator, QualityAnalyst</li>
+              <li>Admin profiles — SystemAdmin, EnterpriseAdmin</li>
+              <li>NetworkSummary.java — 4 analytics methods</li>
+              <li>NetworkCoordinatorWorkArea + QualityAnalystWorkArea</li>
+              <li>SystemAdminWorkArea + AddEditUserPanel</li>
+              <li>EnterpriseAdminWorkArea + EnterpriseAddMemberPanel</li>
+              <li>CardSequencePanel — pushPanel(), popPanel()</li>
+              <li>MainFrame — instanceof routing for 12 roles</li>
+              <li>seedAuth() — all admin + network-level accounts</li>
+            </ul>
+          </div>
+          <div class="sprint-section">
+            <label>Definition of done</label>
+            <ul class="sprint-items">
+              <li>All 12 roles route to correct work area on login</li>
+              <li>Cross-enterprise request chain executes without errors</li>
+              <li>NetworkSummary displays live analytics</li>
+              <li>Admin CRUD functional for System and Enterprise admins</li>
+              <li>Demo credentials confirmed working</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sprint-milestone">Sprint Review: Full 8-step demo story executed successfully end-to-end</div>
+      </div>
+
+      <div class="sprint-card">
+        <div class="sprint-header" style="background:#D85A30">
+          <div>
+            <div class="sprint-title">Sprint 4 — QA, Testing & Demo Rehearsal</div>
+            <div class="sprint-dates">Mar 10 – Mar 22, 2026 · 12 days</div>
+          </div>
+          <span class="sprint-status ss-prog">In progress</span>
+        </div>
+        <div class="sprint-goal">"By the end of this sprint, the application produces zero console errors across all user actions, and the demo has been rehearsed twice within the 20-minute window."</div>
+        <div class="sprint-body">
+          <div class="sprint-section">
+            <label>Sprint backlog</label>
+            <ul class="sprint-items">
+              <li>End-to-end demo flow — all 8 role login sequences</li>
+              <li>Null checks + error handling audit</li>
+              <li>StatusConstants audit — grep for inline strings</li>
+              <li>UIFactory audit — no raw Swing components</li>
+              <li>Cross-enterprise integration test — full Farm → Retail chain</li>
+              <li>User acceptance testing — demo rehearsal ×2, timed</li>
+            </ul>
+          </div>
+          <div class="sprint-section">
+            <label>Definition of done</label>
+            <ul class="sprint-items">
+              <li>Zero NullPointerExceptions on any user action</li>
+              <li>No inline status strings anywhere in codebase</li>
+              <li>Visual consistency confirmed across all 14+ panels</li>
+              <li>Demo completed within 20-minute window ×2</li>
+              <li>QA Lead sign-off obtained</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sprint-milestone">Sprint Review: QA sign-off — application approved for delivery</div>
+      </div>
+
+      <div class="sprint-card">
+        <div class="sprint-header" style="background:#888780">
+          <div>
+            <div class="sprint-title">Sprint 5 — Documentation & Delivery</div>
+            <div class="sprint-dates">Mar 20 – Apr 1, 2026 · 12 days</div>
+          </div>
+          <span class="sprint-status ss-plan">Planned</span>
+        </div>
+        <div class="sprint-goal">"By the end of this sprint, all project deliverables are complete, reviewed, and submitted on GitHub with the repository set to public."</div>
+        <div class="sprint-body">
+          <div class="sprint-section">
+            <label>Sprint backlog</label>
+            <ul class="sprint-items">
+              <li>UML class diagrams — 5 files (shared + 4 enterprise)</li>
+              <li>High-level component diagram (.pdf)</li>
+              <li>Project proposal document (.docx)</li>
+              <li>Presentation slides — 5-minute deck + demo script</li>
+              <li>PM documentation — WBS, Gantt, Risk Register, RACI, Critical Path, Project Charter</li>
+              <li>Final review — all deliverables verified</li>
+              <li>GitHub submission — complete project folder, not zipped</li>
+            </ul>
+          </div>
+          <div class="sprint-section">
+            <label>Definition of done</label>
+            <ul class="sprint-items">
+              <li>All deliverables committed to GitHub repository</li>
+              <li>Repository set to public and accessible</li>
+              <li>Presentation rehearsed and timed at 5 minutes</li>
+              <li>All PM documents verified clean of internal references</li>
+              <li>Project Charter approved by executive sponsor</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sprint-milestone">Sprint Review: Project delivered — all deliverables submitted Apr 1, 2026</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── RISKS ── -->
+  <div class="section" id="section-risks">
+
+    <div class="risk-summary">
+      <div class="risk-box rb-c"><div class="rv">2</div><div class="rl">Critical</div></div>
+      <div class="risk-box rb-h"><div class="rv">6</div><div class="rl">High</div></div>
+      <div class="risk-box rb-m"><div class="rv">4</div><div class="rl">Medium</div></div>
+      <div class="risk-box rb-l"><div class="rv">2</div><div class="rl">Low</div></div>
+    </div>
+
+    <div class="card">
+      <h3>Top Risks</h3>
+      <table class="data-table">
+        <tr><th>Risk ID</th><th>Risk</th><th>Severity</th><th>Probability</th><th>Mitigation</th></tr>
+        <tr><td>R-01</td><td>Merge conflicts on shared files (ConfigureABusiness, WorkRequest, MainFrame)</td><td style="color:#a32d2d;font-weight:600">Critical</td><td>High</td><td>Pull-before-push rule, single owner per shared file, feature branches</td></tr>
+        <tr><td>R-02</td><td>Sync point delay blocks downstream enterprise</td><td style="color:#a32d2d;font-weight:600">Critical</td><td>High</td><td>24-hour advance notice, stub class pattern to unblock compile</td></tr>
+        <tr><td>R-04</td><td>Application fails to launch on demo machine</td><td style="color:#854F0B;font-weight:600">High</td><td>Medium</td><td>Test on clean machine 48h before demo, export runnable JAR as backup</td></tr>
+        <tr><td>R-05</td><td>NullPointerException during live demo</td><td style="color:#854F0B;font-weight:600">High</td><td>Medium</td><td>Null guard on every button handler, pre-populated seed data in all tables</td></tr>
+        <tr><td>R-06</td><td>Team member unable to attend stakeholder presentation</td><td style="color:#854F0B;font-weight:600">High</td><td>Low</td><td>All members review all enterprise code, written contribution summary as backup</td></tr>
+        <tr><td>R-12</td><td>GitHub submission incomplete or incorrectly structured</td><td style="color:#854F0B;font-weight:600">High</td><td>Low</td><td>Submission checklist 48h before deadline, single person owns submission step</td></tr>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Constraints</h3>
+        <table class="data-table">
+          <tr><th>Type</th><th>Constraint</th></tr>
+          <tr><td>Time</td><td>Fixed delivery date — Apr 1, 2026. No extensions.</td></tr>
+          <tr><td>Technology</td><td>Java Swing only. No web frameworks, no databases.</td></tr>
+          <tr><td>Architecture</td><td>In-memory state only. Data resets on each launch.</td></tr>
+          <tr><td>Dependency</td><td>java-faker 1.0.2 via Maven. Must be resolved before demo.</td></tr>
+          <tr><td>IDE</td><td>NetBeans. nbproject/private/ must not be committed.</td></tr>
+          <tr><td>Team size</td><td>4 members. No additional resources available.</td></tr>
+          <tr><td>Demo window</td><td>20-minute live demo. Cannot be extended.</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Dependencies</h3>
+        <table class="data-table">
+          <tr><th>Dependency</th><th>Blocks</th><th>Target date</th></tr>
+          <tr><td>HarvestBatch.java pushed by Farm Lead</td><td>Inspection Lead — InspectionRequest</td><td>Feb 13</td></tr>
+          <tr><td>Certification.java pushed by Inspection Lead</td><td>Distribution Lead — WarehouseItem</td><td>Feb 15</td></tr>
+          <tr><td>ShipmentReceiptConfirmation.java pushed by Distribution Lead</td><td>Retail Lead — InventoryClerkWorkArea</td><td>Feb 21</td></tr>
+          <tr><td>All profile subclasses pushed by enterprise leads</td><td>Integration Lead — MainFrame instanceof routing</td><td>Feb 26</td></tr>
+          <tr><td>Sprint 3 integration complete</td><td>Sprint 4 QA can begin</td><td>Mar 10</td></tr>
+          <tr><td>QA sign-off from QA Lead</td><td>Sprint 5 documentation and delivery</td><td>Mar 22</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SUCCESS CRITERIA ── -->
+  <div class="section" id="section-success">
+
+    <div class="card">
+      <h3>Acceptance Criteria</h3>
+      <table class="data-table">
+        <tr><th>#</th><th>Criterion</th><th>Measurement</th><th>Priority</th></tr>
+        <tr><td>1</td><td>All 12 roles authenticate and route to correct work area</td><td>Login test for each credential pair — zero routing failures</td><td style="color:#a32d2d;font-weight:600">Must have</td></tr>
+        <tr><td>2</td><td>Complete demo story executes without errors</td><td>8-step Farm → Retail chain produces Stocked InventoryItem</td><td style="color:#a32d2d;font-weight:600">Must have</td></tr>
+        <tr><td>3</td><td>All 6 work request types with correct status flows</td><td>Each request transitions through all defined status stages</td><td style="color:#a32d2d;font-weight:600">Must have</td></tr>
+        <tr><td>4</td><td>CRUD operations on all major entities</td><td>Create, Read, Update, Delete verified for Crop, HarvestBatch, PurchaseOrder, InventoryItem, UserAccount</td><td style="color:#a32d2d;font-weight:600">Must have</td></tr>
+        <tr><td>5</td><td>Form validation on all input panels</td><td>Required fields, email format, date regex (YYYY-MM-DD), positive integer quantities all enforced</td><td style="color:#a32d2d;font-weight:600">Must have</td></tr>
+        <tr><td>6</td><td>Zero console errors during demo</td><td>Full demo sequence with no NullPointerException or uncaught exception</td><td style="color:#a32d2d;font-weight:600">Must have</td></tr>
+        <tr><td>7</td><td>Pre-populated seed data via java-faker</td><td>ConfigureABusiness.configure() runs at startup with realistic names and data</td><td style="color:#a32d2d;font-weight:600">Must have</td></tr>
+        <tr><td>8</td><td>NetworkSummary analytics displayed correctly</td><td>Quality Analyst panel shows pass/fail rate, batch counts, open requests by type</td><td style="color:#854F0B;font-weight:600">Should have</td></tr>
+        <tr><td>9</td><td>System Admin and Enterprise Admin CRUD functional</td><td>Add and delete accounts verified for both admin scopes</td><td style="color:#854F0B;font-weight:600">Should have</td></tr>
+        <tr><td>10</td><td>UI visual consistency across all panels</td><td>UIFactory audit confirms no raw Swing components — all panels match design system</td><td style="color:#854F0B;font-weight:600">Should have</td></tr>
+        <tr><td>11</td><td>Demo completed within 20-minute window</td><td>Demo rehearsed twice and timed at 20 minutes or under</td><td style="color:#854F0B;font-weight:600">Should have</td></tr>
+        <tr><td>12</td><td>Full PM documentation package delivered</td><td>WBS, Gantt, Risk Register, RACI, Critical Path, Project Charter all submitted</td><td style="color:#185FA5;font-weight:600">Nice to have</td></tr>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Project Success Metrics</h3>
+        <table class="data-table">
+          <tr><th>Metric</th><th>Target</th></tr>
+          <tr><td>Roles routing correctly on login</td><td>12 / 12 (100%)</td></tr>
+          <tr><td>Work request status flows complete</td><td>6 / 6 (100%)</td></tr>
+          <tr><td>Console errors during demo</td><td>0</td></tr>
+          <tr><td>Form validations implemented</td><td>All input panels</td></tr>
+          <tr><td>Demo story steps completed</td><td>8 / 8</td></tr>
+          <tr><td>Demo duration</td><td>&le; 20 minutes</td></tr>
+          <tr><td>Sprint delivery on schedule</td><td>5 / 5 sprints</td></tr>
+          <tr><td>Sync points delivered on time</td><td>4 / 4</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Key Differentiators</h3>
+        <p>This project demonstrates capabilities directly aligned with enterprise SaaS implementation project management:</p>
+        <br>
+        <p><strong>Parallel workstream management:</strong> 4 enterprise tracks delivered simultaneously in Sprint 2 — analogous to coordinating multiple partner onboarding tracks.</p>
+        <br>
+        <p><strong>Dependency chain management:</strong> 4 hard sync points between enterprise teams — analogous to API integration milestones that gate downstream configuration work.</p>
+        <br>
+        <p><strong>Cross-functional coordination:</strong> 6 work request types crossing organization and enterprise boundaries — mirrors real SaaS partner integration handoffs.</p>
+        <br>
+        <p><strong>Risk-aware delivery:</strong> 14 identified risks with mitigation and contingency plans, tracked throughout the project lifecycle.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SIGN-OFF ── -->
+  <div class="section" id="section-signoff">
+
+    <div class="card">
+      <h3>Charter Approval</h3>
+      <p style="margin-bottom:18px">By signing below, the approving parties confirm that they have reviewed the project charter and authorize the project to proceed as described. Any changes to scope, timeline, or resources after sign-off require a formal change request reviewed by the executive sponsor.</p>
+      <div class="signoff-grid">
+
+        <div class="signoff-box">
+          <div class="signoff-role">Executive Sponsor</div>
+          <div class="signoff-name">Technology Steering Committee</div>
+          <div class="signoff-line"></div>
+          <div class="signoff-date">Date: Apr 1, 2026</div>
+          <span class="signoff-status sig-approved">Approved</span>
+        </div>
+
+        <div class="signoff-box">
+          <div class="signoff-role">Project Manager</div>
+          <div class="signoff-name">Retail Lead</div>
+          <div class="signoff-line"></div>
+          <div class="signoff-date">Date: Feb 1, 2026</div>
+          <span class="signoff-status sig-approved">Approved</span>
+        </div>
+
+        <div class="signoff-box">
+          <div class="signoff-role">Integration Lead</div>
+          <div class="signoff-name">Platform Integration</div>
+          <div class="signoff-line"></div>
+          <div class="signoff-date">Date: Feb 1, 2026</div>
+          <span class="signoff-status sig-approved">Approved</span>
+        </div>
+
+        <div class="signoff-box">
+          <div class="signoff-role">Farm Lead</div>
+          <div class="signoff-name">Farm / Producer Enterprise</div>
+          <div class="signoff-line"></div>
+          <div class="signoff-date">Date: Feb 1, 2026</div>
+          <span class="signoff-status sig-approved">Approved</span>
+        </div>
+
+        <div class="signoff-box">
+          <div class="signoff-role">Inspection Lead</div>
+          <div class="signoff-name">Quality & Inspection Enterprise</div>
+          <div class="signoff-line"></div>
+          <div class="signoff-date">Date: Feb 1, 2026</div>
+          <span class="signoff-status sig-approved">Approved</span>
+        </div>
+
+        <div class="signoff-box">
+          <div class="signoff-role">Distribution Lead</div>
+          <div class="signoff-name">Distribution / Logistics Enterprise</div>
+          <div class="signoff-line"></div>
+          <div class="signoff-date">Date: Feb 1, 2026</div>
+          <span class="signoff-status sig-approved">Approved</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Document Control</h3>
+      <table class="data-table">
+        <tr><th>Field</th><th>Value</th></tr>
+        <tr><td>Document title</td><td>Regional Farm-to-Table Food Network — Project Charter</td></tr>
+        <tr><td>Version</td><td>1.0 (Approved)</td></tr>
+        <tr><td>Created</td><td>Feb 1, 2026</td></tr>
+        <tr><td>Last updated</td><td>Apr 1, 2026</td></tr>
+        <tr><td>Methodology</td><td>Agile / Scrum — 5 sprints</td></tr>
+        <tr><td>Project duration</td><td>59 days (Feb 1 – Apr 1, 2026)</td></tr>
+        <tr><td>Repository</td><td>GitHub — public repository, not zipped</td></tr>
+
+        <tr><td>Change control</td><td>All scope changes require written approval from executive sponsor before implementation</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<footer class="page-footer">
+  Regional Farm-to-Table Food Network &nbsp;|&nbsp; Multi-Enterprise SaaS Implementation Project
+</footer>
+
+<script>
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>

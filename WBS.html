@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm-to-Table Network — Work Breakdown Structure</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #ffffff;
+    --bg2:     #f8f9fa;
+    --bg3:     #f1f3f5;
+    --text:    #1a1a1a;
+    --text2:   #555;
+    --text3:   #888;
+    --border:  #e0e0e0;
+    --border2: #c8c8c8;
+    --green:   #2e5c1e;
+    --green2:  #4a7c2f;
+    --radius:  8px;
+  }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; }
+
+  .page-header { background: var(--green); color: white; padding: 24px 32px 20px; border-bottom: 3px solid var(--green2); }
+  .page-header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .page-header p  { font-size: 13px; opacity: 0.85; }
+  .header-meta { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+  .header-meta span { font-size: 12px; opacity: 0.9; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; }
+
+  .page-body { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; }
+  .stat-val { font-size: 22px; font-weight: 600; }
+  .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* Toolbar */
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; }
+  .toolbar label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .toolbar select, .toolbar input { font-size: 12px; padding: 6px 10px; border: 1px solid var(--border2); border-radius: 6px; background: var(--bg); color: var(--text); outline: none; }
+  .toolbar select:focus, .toolbar input:focus { border-color: var(--green2); }
+  .tsep { width: 1px; height: 20px; background: var(--border); }
+  .tbtn { font-size: 12px; padding: 6px 12px; border: 1px solid var(--border2); border-radius: 6px; cursor: pointer; background: var(--bg); color: var(--text2); }
+  .tbtn:hover { background: var(--bg3); }
+  .tbtn.active { background: var(--green); color: white; border-color: var(--green); }
+
+  /* WBS Table */
+  .wbs-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .wbs-scroll { overflow-x: auto; }
+
+  table { border-collapse: collapse; width: 100%; min-width: 900px; }
+  thead th { font-size: 11px; font-weight: 600; color: var(--text2); padding: 8px 12px; text-align: left; background: var(--bg2); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 2; }
+  thead th.center { text-align: center; }
+
+  tbody tr { cursor: pointer; transition: background 0.1s; }
+  tbody tr:hover td { background: #f0f7eb !important; }
+  tbody tr.hidden { display: none; }
+
+  tbody td { font-size: 12px; padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+
+  /* Row levels */
+  tr.level-0 td { background: var(--green); color: white; font-weight: 600; font-size: 12px; border-bottom: 2px solid var(--green2); }
+  tr.level-0:hover td { background: var(--green2) !important; }
+  tr.level-1 td { background: #eaf3de; font-weight: 600; font-size: 11.5px; color: var(--green); border-bottom: 1px solid #c8e6c9; }
+  tr.level-1:hover td { background: #d4ebbf !important; }
+  tr.level-2 td { background: var(--bg); color: var(--text2); padding-left: 28px; }
+  tr.level-2:hover td { background: #f0f7eb !important; }
+
+  td.wbs-id { font-weight: 600; font-size: 11px; white-space: nowrap; min-width: 60px; }
+  td.wbs-task { min-width: 300px; }
+  td.wbs-phase { white-space: nowrap; font-size: 11px; }
+  td.wbs-domain { white-space: nowrap; font-size: 11px; }
+  td.wbs-deliverable { font-size: 11px; color: var(--text2); }
+  td.wbs-start, td.wbs-end { white-space: nowrap; font-size: 11px; text-align: center; }
+  td.wbs-status { text-align: center; }
+  td.wbs-dep { font-size: 11px; color: var(--text3); white-space: nowrap; }
+
+  .status-pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+  .s-complete   { background: #eaf3de; color: #3B6D11; }
+  .s-inprogress { background: #faeeda; color: #854F0B; }
+  .s-planned    { background: #e6f1fb; color: #185FA5; }
+  .s-phase      { color: white; font-size: 11px; opacity: 0.85; }
+
+  .domain-badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+  .d-foundation   { background: #e6f1fb; color: #185FA5; }
+  .d-farm         { background: #eaf3de; color: #3B6D11; }
+  .d-inspection   { background: #faeeda; color: #854F0B; }
+  .d-distribution { background: #eeedfe; color: #534AB7; }
+  .d-retail       { background: #fbeaf0; color: #993556; }
+  .d-integration  { background: #e1f5ee; color: #0F6E56; }
+  .d-qa           { background: #faece7; color: #993C1D; }
+  .d-documentation{ background: #f1efe8; color: #5F5E5A; }
+  .d-shared       { background: #f1efe8; color: #5F5E5A; }
+
+  .sync-badge { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 8px; background: #fcebeb; color: #a32d2d; font-weight: 700; margin-left: 4px; vertical-align: middle; }
+
+  .progress-bar { width: 60px; height: 6px; background: var(--bg3); border-radius: 3px; display: inline-block; vertical-align: middle; }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--green2); }
+
+  .no-results { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; }
+
+  .page-footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text3); border-top: 1px solid var(--border); margin-top: 24px; }
+  .page-footer a { color: var(--green2); text-decoration: none; }
+
+  .expand-btn { font-size: 10px; padding: 2px 6px; border: 1px solid var(--border2); border-radius: 4px; cursor: pointer; background: transparent; color: var(--text3); margin-left: 8px; }
+  .expand-btn:hover { background: var(--bg3); }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(3,1fr); }
+    .page-header { padding: 16px; }
+    .page-body { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>Regional Farm-to-Table Food Network</h1>
+  <p>Work Breakdown Structure — Multi-Enterprise SaaS Implementation Project</p>
+  <div class="header-meta">
+    <span>Feb 1 – Apr 1, 2026</span>
+    <span>5 Phases</span>
+    <span>4 Enterprise Workstreams</span>
+    <span>Java Swing · NetBeans · java-faker</span>
+  </div>
+</header>
+
+<div class="page-body">
+
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <label>Phase:</label>
+    <select id="f-phase">
+      <option value="all">All phases</option>
+      <option value="Phase 1">Phase 1 — Foundation</option>
+      <option value="Phase 2">Phase 2 — Domain Build</option>
+      <option value="Phase 3">Phase 3 — Integration</option>
+      <option value="Phase 4">Phase 4 — QA</option>
+      <option value="Phase 5">Phase 5 — Documentation</option>
+    </select>
+    <div class="tsep"></div>
+    <label>Domain:</label>
+    <select id="f-domain">
+      <option value="all">All domains</option>
+      <option value="Foundation">Foundation</option>
+      <option value="Farm">Farm</option>
+      <option value="Inspection">Inspection</option>
+      <option value="Distribution">Distribution</option>
+      <option value="Retail">Retail</option>
+      <option value="Integration">Integration</option>
+      <option value="QA">QA</option>
+      <option value="Documentation">Documentation</option>
+    </select>
+    <div class="tsep"></div>
+    <label>Status:</label>
+    <select id="f-status">
+      <option value="all">All statuses</option>
+      <option value="Complete">Complete</option>
+      <option value="In progress">In progress</option>
+      <option value="Planned">Planned</option>
+    </select>
+    <div class="tsep"></div>
+    <label>Search:</label>
+    <input type="text" id="f-search" placeholder="Search tasks..." style="width:160px">
+    <button class="tbtn" onclick="resetFilters()">Reset</button>
+    <div class="tsep"></div>
+    <button class="tbtn" id="btn-expand" onclick="toggleAll()">Collapse all</button>
+  </div>
+
+  <div class="wbs-wrap">
+    <div class="wbs-scroll">
+      <table id="wbs-table">
+        <thead>
+          <tr>
+            <th style="width:70px">WBS ID</th>
+            <th style="min-width:320px">Work Package / Task</th>
+            <th style="width:110px">Phase</th>
+            <th style="width:130px">Domain</th>
+            <th style="min-width:220px">Key Deliverable</th>
+            <th class="center" style="width:85px">Start</th>
+            <th class="center" style="width:85px">End</th>
+            <th class="center" style="width:95px">Status</th>
+            <th style="width:80px">Depends on</th>
+          </tr>
+        </thead>
+        <tbody id="wbs-body"></tbody>
+      </table>
+      <div class="no-results" id="no-results" style="display:none">No tasks match your filters.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="page-footer">
+  Regional Farm-to-Table Food Network &nbsp;|&nbsp; Multi-Enterprise SaaS Implementation Project &nbsp;|&nbsp;
+  <a href="https://lanreyusuff.com" target="_blank">lanreyusuff.com</a>
+</footer>
+
+<script>
+const DOMAIN_CLASS = {
+  'Foundation':'d-foundation','Farm':'d-farm','Inspection':'d-inspection',
+  'Distribution':'d-distribution','Retail':'d-retail','Integration':'d-integration',
+  'QA':'d-qa','Documentation':'d-documentation','Shared':'d-shared'
+};
+
+const DATA = [
+  // ── PHASE 1 ──────────────────────────────────────────────────────────────
+  {id:'1.0',  level:0, task:'Phase 1 — Foundation & Setup',                                     phase:'Phase 1', domain:'Foundation',    deliverable:'Shared foundation classes, auth system, package structure', start:'Feb 1',  end:'Feb 10', status:'Complete', dep:''},
+  {id:'1.1',  level:2, task:'Fix pom.xml — Java 21 LTS, Faker dependency',                       phase:'Phase 1', domain:'Foundation',    deliverable:'Build environment ready', start:'Feb 1',  end:'Feb 3',  status:'Complete', dep:''},
+  {id:'1.2',  level:2, task:'Fix .gitignore — exclude machine-specific settings',                 phase:'Phase 1', domain:'Foundation',    deliverable:'.gitignore committed', start:'Feb 1',  end:'Feb 2',  status:'Complete', dep:''},
+  {id:'1.3',  level:2, task:'Create all 18 package directories',                                  phase:'Phase 1', domain:'Foundation',    deliverable:'Package structure ready', start:'Feb 1',  end:'Feb 2',  status:'Complete', dep:''},
+  {id:'1.4',  level:2, task:'UIConstants.java, UIFactory.java, StatusConstants.java',             phase:'Phase 1', domain:'Foundation',    deliverable:'Shared UI toolkit in ui/ package', start:'Feb 2',  end:'Feb 5',  status:'Complete', dep:''},
+  {id:'1.5',  level:2, task:'Organization.java — orgId, name, enterpriseId, toString()',          phase:'Phase 1', domain:'Foundation',    deliverable:'Organization compiles', start:'Feb 2',  end:'Feb 4',  status:'Complete', dep:''},
+  {id:'1.6',  level:2, task:'Person.java — personId, firstName, lastName, email, phone',          phase:'Phase 1', domain:'Foundation',    deliverable:'Person compiles', start:'Feb 2',  end:'Feb 4',  status:'Complete', dep:''},
+  {id:'1.7',  level:2, task:'Profile.java (abstract) — profileId, person, role, org',            phase:'Phase 1', domain:'Foundation',    deliverable:'Profile compiles — base for all 10 roles', start:'Feb 3',  end:'Feb 5',  status:'Complete', dep:'1.5,1.6', sync:true},
+  {id:'1.8',  level:2, task:'UserAccount.java — authenticate(), updatePassword()',                phase:'Phase 1', domain:'Foundation',    deliverable:'UserAccount compiles', start:'Feb 3',  end:'Feb 5',  status:'Complete', dep:'1.7'},
+  {id:'1.9',  level:2, task:'UserAccountDirectory.java — authenticate(), findAccount()',          phase:'Phase 1', domain:'Foundation',    deliverable:'Auth system ready', start:'Feb 4',  end:'Feb 6',  status:'Complete', dep:'1.8'},
+  {id:'1.10', level:2, task:'WorkRequest.java (abstract) — requestId, status, senderOrg, receiverOrg', phase:'Phase 1', domain:'Foundation', deliverable:'WorkRequest compiles — base for all 6 requests', start:'Feb 4',  end:'Feb 6',  status:'Complete', dep:'1.5', sync:true},
+  {id:'1.11', level:2, task:'WorkRequestDirectory.java — findByStatus(), findByOrg()',            phase:'Phase 1', domain:'Foundation',    deliverable:'WorkRequestDirectory compiles', start:'Feb 5',  end:'Feb 7',  status:'Complete', dep:'1.10'},
+  {id:'1.12', level:2, task:'Enterprise.java, Network.java, Ecosystem.java',                     phase:'Phase 1', domain:'Foundation',    deliverable:'Full hierarchy chain compiles', start:'Feb 4',  end:'Feb 7',  status:'Complete', dep:'1.5'},
+  {id:'1.13', level:2, task:'ConfigureABusiness.java stub — 8 static org refs + all directories',phase:'Phase 1', domain:'Foundation',    deliverable:'Stub with all directory fields', start:'Feb 7',  end:'Feb 9',  status:'Complete', dep:'1.12'},
+  {id:'1.14', level:2, task:'Main.java — calls configure(), launches MainFrame on EDT',          phase:'Phase 1', domain:'Foundation',    deliverable:'App launches', start:'Feb 8',  end:'Feb 10', status:'Complete', dep:'1.13'},
+  {id:'M1',   level:1, task:'Milestone — Foundation complete',                                   phase:'Phase 1', domain:'Foundation',    deliverable:'All shared classes compile, app boots', start:'Feb 10', end:'Feb 10', status:'Complete', dep:'1.14'},
+
+  // ── PHASE 2 ──────────────────────────────────────────────────────────────
+  {id:'2.0',  level:0, task:'Phase 2 — Enterprise Domain Build (4 parallel tracks)',             phase:'Phase 2', domain:'Farm',          deliverable:'All 4 enterprise domain models + UI panels', start:'Feb 8',  end:'Feb 26', status:'Complete', dep:'M1'},
+
+  {id:'2.1',  level:1, task:'Farm / Producer Enterprise',                                        phase:'Phase 2', domain:'Farm',          deliverable:'Farm domain classes + UI panels', start:'Feb 8',  end:'Feb 21', status:'Complete', dep:'M1'},
+  {id:'2.1.1',level:2, task:'Crop.java — cropId, type, plantingDate, fieldLocation, status',     phase:'Phase 2', domain:'Farm',          deliverable:'Crop.java compiles', start:'Feb 8',  end:'Feb 11', status:'Complete', dep:'M1'},
+  {id:'2.1.2',level:2, task:'CropDirectory.java — newCrop(), findCrop(), getAllCrops()',          phase:'Phase 2', domain:'Farm',          deliverable:'CropDirectory.java compiles', start:'Feb 8',  end:'Feb 11', status:'Complete', dep:'M1'},
+  {id:'2.1.3',level:2, task:'HarvestBatch.java — batchId, crop, quantityKg (float), grade, status', phase:'Phase 2', domain:'Farm',      deliverable:'HarvestBatch.java [SYNC POINT for Inspection]', start:'Feb 8',  end:'Feb 13', status:'Complete', dep:'2.1.1', sync:true},
+  {id:'2.1.4',level:2, task:'HarvestBatchDirectory.java — newBatch(), findByStatus()',           phase:'Phase 2', domain:'Farm',          deliverable:'HarvestBatchDirectory.java compiles', start:'Feb 10', end:'Feb 13', status:'Complete', dep:'2.1.3'},
+  {id:'2.1.5',level:2, task:'HarvestSubmission.java — extends WorkRequest, approve(), reject()', phase:'Phase 2', domain:'Farm',          deliverable:'HarvestSubmission extends WorkRequest', start:'Feb 11', end:'Feb 14', status:'Complete', dep:'2.1.3'},
+  {id:'2.1.6',level:2, task:'FarmerProfile.java + HarvestWorkerProfile.java',                   phase:'Phase 2', domain:'Farm',          deliverable:'Farm profile subclasses compile', start:'Feb 10', end:'Feb 12', status:'Complete', dep:'M1'},
+  {id:'2.1.7',level:2, task:'FarmerWorkArea.java — crop table, New Crop + Submit Harvest buttons',phase:'Phase 2', domain:'Farm',         deliverable:'Farmer UI panels functional', start:'Feb 13', end:'Feb 18', status:'Complete', dep:'2.1.5'},
+  {id:'2.1.8',level:2, task:'NewCropPanel.java — type, date (YYYY-MM-DD), location validation', phase:'Phase 2', domain:'Farm',          deliverable:'NewCropPanel functional', start:'Feb 14', end:'Feb 17', status:'Complete', dep:'2.1.7'},
+  {id:'2.1.9',level:2, task:'SubmitHarvestPanel.java — crop combo, float qty validation',        phase:'Phase 2', domain:'Farm',          deliverable:'SubmitHarvestPanel functional', start:'Feb 15', end:'Feb 18', status:'Complete', dep:'2.1.7'},
+  {id:'2.1.10',level:2,task:'HarvestWorkerWorkArea.java — approve submission, create batch',     phase:'Phase 2', domain:'Farm',          deliverable:'HarvestWorkerWorkArea functional', start:'Feb 16', end:'Feb 20', status:'Complete', dep:'2.1.7'},
+  {id:'2.1.11',level:2,task:'CreateBatchPanel.java — triggers InspectionRequest on submit',      phase:'Phase 2', domain:'Farm',          deliverable:'CreateBatchPanel functional', start:'Feb 18', end:'Feb 21', status:'Complete', dep:'2.1.10'},
+  {id:'2.1.12',level:2,task:'seedFarm() — crops, batches, accounts, seeded InspectionRequest',  phase:'Phase 2', domain:'Farm',          deliverable:'Farm seed data via Faker', start:'Feb 19', end:'Feb 21', status:'Complete', dep:'2.1.11'},
+
+  {id:'2.2',  level:1, task:'Quality & Inspection Enterprise',                                   phase:'Phase 2', domain:'Inspection',    deliverable:'Inspection domain classes + UI panels', start:'Feb 10', end:'Feb 22', status:'Complete', dep:'2.1.3'},
+  {id:'2.2.1',level:2, task:'InspectorProfile.java + CertifierProfile.java',                    phase:'Phase 2', domain:'Inspection',    deliverable:'Inspection profile subclasses compile', start:'Feb 10', end:'Feb 12', status:'Complete', dep:'M1'},
+  {id:'2.2.2',level:2, task:'Certification.java — certId, inspection ref, certType, expiryDate', phase:'Phase 2', domain:'Inspection',   deliverable:'Certification.java [SYNC POINT for Distribution]', start:'Feb 10', end:'Feb 15', status:'Complete', dep:'2.1.3', sync:true},
+  {id:'2.2.3',level:2, task:'CertificationDirectory.java — findByStatus(CERTIFIED), getAllApprovals()', phase:'Phase 2', domain:'Inspection', deliverable:'CertificationDirectory.java compiles', start:'Feb 12', end:'Feb 15', status:'Complete', dep:'2.2.2'},
+  {id:'2.2.4',level:2, task:'InspectionRequest.java — assign(), recordResult() auto-creates CertApproval', phase:'Phase 2', domain:'Inspection', deliverable:'InspectionRequest extends WorkRequest', start:'Feb 13', end:'Feb 17', status:'Complete', dep:'2.2.2'},
+  {id:'2.2.5',level:2, task:'CertificationApproval.java — approve() creates Certification, deny() terminal', phase:'Phase 2', domain:'Inspection', deliverable:'CertificationApproval extends WorkRequest', start:'Feb 15', end:'Feb 18', status:'Complete', dep:'2.2.4'},
+  {id:'2.2.6',level:2, task:'InspectionDirectory.java — getOpenRequests(), findByAssignedInspector()', phase:'Phase 2', domain:'Inspection', deliverable:'InspectionDirectory.java compiles', start:'Feb 15', end:'Feb 17', status:'Complete', dep:'2.2.4'},
+  {id:'2.2.7',level:2, task:'InspectorWorkArea.java — table, Claim button, Record Result button', phase:'Phase 2', domain:'Inspection',  deliverable:'Inspector UI panels functional', start:'Feb 15', end:'Feb 20', status:'Complete', dep:'2.2.5'},
+  {id:'2.2.8',level:2, task:'RecordResultPanel.java — Pass/Fail combo, auto-creates CertApproval', phase:'Phase 2', domain:'Inspection', deliverable:'RecordResultPanel functional', start:'Feb 17', end:'Feb 20', status:'Complete', dep:'2.2.7'},
+  {id:'2.2.9',level:2, task:'CertifierWorkArea.java — pending approvals table, Approve + Deny',  phase:'Phase 2', domain:'Inspection',   deliverable:'Certifier UI panels functional', start:'Feb 18', end:'Feb 22', status:'Complete', dep:'2.2.7'},
+  {id:'2.2.10',level:2,task:'IssueCertificationPanel.java — certType, expiryDate, validation',  phase:'Phase 2', domain:'Inspection',    deliverable:'IssueCertificationPanel functional', start:'Feb 19', end:'Feb 22', status:'Complete', dep:'2.2.9'},
+  {id:'2.2.11',level:2,task:'seedInspection() + certPassFailRate() in NetworkSummary',          phase:'Phase 2', domain:'Inspection',    deliverable:'Inspection seed data + reporting method', start:'Feb 20', end:'Feb 22', status:'Complete', dep:'2.2.10'},
+
+  {id:'2.3',  level:1, task:'Distribution / Logistics Enterprise',                              phase:'Phase 2', domain:'Distribution',  deliverable:'Distribution domain classes + UI panels', start:'Feb 14', end:'Feb 25', status:'Complete', dep:'2.2.2'},
+  {id:'2.3.1',level:2, task:'WarehouseManagerProfile.java + DeliveryDriverProfile.java',        phase:'Phase 2', domain:'Distribution',  deliverable:'Distribution profile subclasses compile', start:'Feb 10', end:'Feb 12', status:'Complete', dep:'M1'},
+  {id:'2.3.2',level:2, task:'WarehouseItem.java — itemId, certification ref, productName, qty (int)', phase:'Phase 2', domain:'Distribution', deliverable:'WarehouseItem references Certification', start:'Feb 14', end:'Feb 18', status:'Complete', dep:'2.2.2'},
+  {id:'2.3.3',level:2, task:'WarehouseDirectory.java — newItem(), findByStatus(), getAllItems()',phase:'Phase 2', domain:'Distribution',  deliverable:'WarehouseDirectory.java compiles', start:'Feb 15', end:'Feb 18', status:'Complete', dep:'2.3.2'},
+  {id:'2.3.4',level:2, task:'Shipment.java — shipmentId, deliveryRequest ref, trackingNotes',  phase:'Phase 2', domain:'Distribution',  deliverable:'Shipment.java compiles', start:'Feb 16', end:'Feb 18', status:'Complete', dep:'2.3.2'},
+  {id:'2.3.5',level:2, task:'DeliveryRequest.java — assign(), markDelivered() auto-creates ReceiptConfirmation', phase:'Phase 2', domain:'Distribution', deliverable:'DeliveryRequest extends WorkRequest', start:'Feb 17', end:'Feb 21', status:'Complete', dep:'2.3.2'},
+  {id:'2.3.6',level:2, task:'ShipmentReceiptConfirmation.java — confirm(), stock()',            phase:'Phase 2', domain:'Distribution',  deliverable:'ShipmentReceiptConfirmation [SYNC POINT for Retail]', start:'Feb 18', end:'Feb 21', status:'Complete', dep:'2.3.5', sync:true},
+  {id:'2.3.7',level:2, task:'ShipmentReceiptConfirmationDirectory.java — getPendingReceipts()', phase:'Phase 2', domain:'Distribution',  deliverable:'Receipt directory compiles', start:'Feb 19', end:'Feb 21', status:'Complete', dep:'2.3.6'},
+  {id:'2.3.8',level:2, task:'DeliveryDirectory.java — newDelivery(), findByStatus()',           phase:'Phase 2', domain:'Distribution',  deliverable:'DeliveryDirectory.java compiles', start:'Feb 19', end:'Feb 21', status:'Complete', dep:'2.3.5'},
+  {id:'2.3.9',level:2, task:'WarehouseManagerWorkArea.java — warehouse table, Receive Batch + Create Delivery', phase:'Phase 2', domain:'Distribution', deliverable:'Warehouse Manager UI functional', start:'Feb 19', end:'Feb 23', status:'Complete', dep:'2.3.5'},
+  {id:'2.3.10',level:2,task:'ReceiveBatchPanel.java — cert combo (CERTIFIED only), productName, qty, location', phase:'Phase 2', domain:'Distribution', deliverable:'ReceiveBatchPanel functional', start:'Feb 20', end:'Feb 23', status:'Complete', dep:'2.3.9'},
+  {id:'2.3.11',level:2,task:'CreateDeliveryPanel.java — item ref, PO ID field, tracking notes, creates Shipment', phase:'Phase 2', domain:'Distribution', deliverable:'CreateDeliveryPanel functional', start:'Feb 21', end:'Feb 24', status:'Complete', dep:'2.3.9'},
+  {id:'2.3.12',level:2,task:'DeliveryDriverWorkArea.java — Claim button, Mark Delivered button', phase:'Phase 2', domain:'Distribution', deliverable:'Delivery Driver UI functional', start:'Feb 21', end:'Feb 25', status:'Complete', dep:'2.3.9'},
+  {id:'2.3.13',level:2,task:'seedDistribution() + reporting methods in NetworkSummary',         phase:'Phase 2', domain:'Distribution',  deliverable:'Distribution seed data + NetworkSummary methods', start:'Feb 23', end:'Feb 25', status:'Complete', dep:'2.3.12'},
+
+  {id:'2.4',  level:1, task:'Retail Store / Restaurant Enterprise',                             phase:'Phase 2', domain:'Retail',        deliverable:'Retail domain classes + UI panels', start:'Feb 8',  end:'Feb 26', status:'Complete', dep:'M1'},
+  {id:'2.4.1',level:2, task:'ProcurementOfficerProfile.java + InventoryClerkProfile.java',      phase:'Phase 2', domain:'Retail',        deliverable:'Retail profile subclasses compile', start:'Feb 8',  end:'Feb 10', status:'Complete', dep:'M1'},
+  {id:'2.4.2',level:2, task:'PurchaseOrder.java — extends WorkRequest, confirm(), fulfill(), receive()', phase:'Phase 2', domain:'Retail', deliverable:'PurchaseOrder extends WorkRequest', start:'Feb 8',  end:'Feb 14', status:'Complete', dep:'M1'},
+  {id:'2.4.3',level:2, task:'PurchaseOrderDirectory.java — newOrder(), findByStatus()',         phase:'Phase 2', domain:'Retail',        deliverable:'PurchaseOrderDirectory.java compiles', start:'Feb 10', end:'Feb 13', status:'Complete', dep:'2.4.2'},
+  {id:'2.4.4',level:2, task:'InventoryItem.java — inventoryId, purchaseOrderId (int), productName, qty (int)', phase:'Phase 2', domain:'Retail', deliverable:'InventoryItem.java compiles', start:'Feb 10', end:'Feb 14', status:'Complete', dep:'M1'},
+  {id:'2.4.5',level:2, task:'InventoryDirectory.java — newItem(), findItem(), getAllItems()',    phase:'Phase 2', domain:'Retail',        deliverable:'InventoryDirectory.java compiles', start:'Feb 12', end:'Feb 14', status:'Complete', dep:'2.4.4'},
+  {id:'2.4.6',level:2, task:'ProcurementOfficerWorkArea.java — PO table, + New Order button',  phase:'Phase 2', domain:'Retail',        deliverable:'Procurement Officer UI functional', start:'Feb 14', end:'Feb 18', status:'Complete', dep:'2.4.2'},
+  {id:'2.4.7',level:2, task:'NewOrderPanel.java — productName, qty, distributor, date, validation', phase:'Phase 2', domain:'Retail',   deliverable:'NewOrderPanel functional', start:'Feb 16', end:'Feb 19', status:'Complete', dep:'2.4.6'},
+  {id:'2.4.8',level:2, task:'InventoryClerkWorkArea.java — dual-table: pending receipts + inventory', phase:'Phase 2', domain:'Retail', deliverable:'Inventory Clerk UI functional', start:'Feb 21', end:'Feb 25', status:'Complete', dep:'2.3.6'},
+  {id:'2.4.9',level:2, task:'ConfirmReceiptPanel.java — confirm() + stock() + creates InventoryItem', phase:'Phase 2', domain:'Retail', deliverable:'ConfirmReceiptPanel functional', start:'Feb 23', end:'Feb 26', status:'Complete', dep:'2.4.8'},
+  {id:'2.4.10',level:2,task:'seedRetail() + totalOrdersReceived() in NetworkSummary',           phase:'Phase 2', domain:'Retail',        deliverable:'Retail seed data + reporting method', start:'Feb 24', end:'Feb 26', status:'Complete', dep:'2.4.9'},
+  {id:'M2',   level:1, task:'Milestone — All domain builds complete',                           phase:'Phase 2', domain:'Integration',   deliverable:'All 4 enterprise tracks compile, unit tested', start:'Feb 26', end:'Feb 26', status:'Complete', dep:'2.1.12,2.2.11,2.3.13,2.4.10'},
+
+  // ── PHASE 3 ──────────────────────────────────────────────────────────────
+  {id:'3.0',  level:0, task:'Phase 3 — Integration & Cross-Enterprise Wiring',                  phase:'Phase 3', domain:'Integration',   deliverable:'End-to-end cross-enterprise flows operational', start:'Feb 26', end:'Mar 10', status:'Complete', dep:'M2'},
+  {id:'3.1',  level:2, task:'NetworkCoordinatorProfile.java + QualityAnalystProfile.java',      phase:'Phase 3', domain:'Integration',   deliverable:'Network-level profile subclasses compile', start:'Feb 26', end:'Feb 28', status:'Complete', dep:'M2'},
+  {id:'3.2',  level:2, task:'SystemAdminProfile.java + EnterpriseAdminProfile.java',            phase:'Phase 3', domain:'Integration',   deliverable:'Admin profile subclasses compile', start:'Feb 26', end:'Feb 28', status:'Complete', dep:'M2'},
+  {id:'3.3',  level:2, task:'NetworkSummary.java — batchCountByStatus(), certPassFailRate(), openRequestsByType(), totals', phase:'Phase 3', domain:'Integration', deliverable:'All 4 analytics methods implemented', start:'Feb 27', end:'Mar 1',  status:'Complete', dep:'3.1'},
+  {id:'3.4',  level:2, task:'NetworkCoordinatorWorkArea.java — all-requests table, status filter', phase:'Phase 3', domain:'Integration', deliverable:'Network Coordinator panel functional', start:'Mar 1',  end:'Mar 5',  status:'Complete', dep:'3.3'},
+  {id:'3.5',  level:2, task:'QualityAnalystWorkArea.java — KPI cards, batch status table, open requests', phase:'Phase 3', domain:'Integration', deliverable:'Quality Analyst reporting panel functional', start:'Mar 1',  end:'Mar 5',  status:'Complete', dep:'3.3'},
+  {id:'3.6',  level:2, task:'SystemAdminWorkArea.java + AddEditUserPanel.java',                 phase:'Phase 3', domain:'Integration',   deliverable:'System Admin full CRUD on all accounts', start:'Mar 1',  end:'Mar 5',  status:'Complete', dep:'3.2'},
+  {id:'3.7',  level:2, task:'EnterpriseAdminWorkArea.java + EnterpriseAddMemberPanel.java',     phase:'Phase 3', domain:'Integration',   deliverable:'Enterprise Admin scoped CRUD by enterpriseId', start:'Mar 3',  end:'Mar 7',  status:'Complete', dep:'3.6'},
+  {id:'3.8',  level:2, task:'CardSequencePanel.java — pushPanel(), popPanel()',                  phase:'Phase 3', domain:'Integration',   deliverable:'Unified CardLayout navigation API', start:'Mar 3',  end:'Mar 4',  status:'Complete', dep:'M2', sync:true},
+  {id:'3.9',  level:2, task:'MainFrame.java — JSplitPane, login panel, instanceof routing for 12 roles', phase:'Phase 3', domain:'Integration', deliverable:'All 12 roles route to correct work area', start:'Mar 4',  end:'Mar 8',  status:'Complete', dep:'3.8'},
+  {id:'3.10', level:2, task:'seedAuth() — all admin + network-level accounts via Faker',        phase:'Phase 3', domain:'Integration',   deliverable:'Full demo credential set populated', start:'Mar 7',  end:'Mar 9',  status:'Complete', dep:'3.9'},
+  {id:'M3',   level:1, task:'Milestone — Integration complete',                                 phase:'Phase 3', domain:'Integration',   deliverable:'All 12 roles log in and navigate successfully', start:'Mar 10', end:'Mar 10', status:'Complete', dep:'3.10'},
+
+  // ── PHASE 4 ──────────────────────────────────────────────────────────────
+  {id:'4.0',  level:0, task:'Phase 4 — QA, Testing & Demo Rehearsal',                          phase:'Phase 4', domain:'QA',            deliverable:'Zero console errors, full demo flow verified', start:'Mar 10', end:'Mar 22', status:'In progress', dep:'M3'},
+  {id:'4.1',  level:2, task:'End-to-end demo flow — all role login sequences',                  phase:'Phase 4', domain:'QA',            deliverable:'Demo script executed successfully', start:'Mar 10', end:'Mar 14', status:'In progress', dep:'M3'},
+  {id:'4.2',  level:2, task:'Null checks + error handling audit — no console errors',           phase:'Phase 4', domain:'QA',            deliverable:'No console errors on any user action', start:'Mar 12', end:'Mar 16', status:'In progress', dep:'4.1'},
+  {id:'4.3',  level:2, task:'StatusConstants audit — no inline status strings',                 phase:'Phase 4', domain:'QA',            deliverable:'All status refs use StatusConstants.XXX', start:'Mar 14', end:'Mar 16', status:'In progress', dep:'4.2'},
+  {id:'4.4',  level:2, task:'UIFactory audit — no raw Swing component instantiation',           phase:'Phase 4', domain:'QA',            deliverable:'Visual consistency confirmed across all panels', start:'Mar 14', end:'Mar 16', status:'In progress', dep:'4.2'},
+  {id:'4.5',  level:2, task:'Cross-enterprise integration test — full Farm → Retail chain',     phase:'Phase 4', domain:'QA',            deliverable:'Complete flow verified end-to-end', start:'Mar 15', end:'Mar 19', status:'Planned', dep:'4.3'},
+  {id:'4.6',  level:2, task:'User acceptance testing — demo rehearsal x2, timed at 20 min',    phase:'Phase 4', domain:'QA',            deliverable:'Demo rehearsed and timed within window', start:'Mar 18', end:'Mar 22', status:'Planned', dep:'4.5'},
+  {id:'M4',   level:1, task:'Milestone — QA sign-off',                                         phase:'Phase 4', domain:'QA',            deliverable:'Application approved for delivery', start:'Mar 22', end:'Mar 22', status:'Planned', dep:'4.6'},
+
+  // ── PHASE 5 ──────────────────────────────────────────────────────────────
+  {id:'5.0',  level:0, task:'Phase 5 — Documentation & Delivery',                              phase:'Phase 5', domain:'Documentation', deliverable:'All deliverables submitted on GitHub', start:'Mar 20', end:'Apr 1',  status:'In progress', dep:'M4'},
+  {id:'5.1',  level:2, task:'UML class diagrams — 5 files (shared + 4 enterprise)',            phase:'Phase 5', domain:'Documentation', deliverable:'UML PDFs with attributes, methods, relationships', start:'Mar 20', end:'Mar 24', status:'In progress', dep:'M3'},
+  {id:'5.2',  level:2, task:'High-level component diagram (.pdf)',                              phase:'Phase 5', domain:'Documentation', deliverable:'Component diagram PDF', start:'Mar 22', end:'Mar 25', status:'Planned',   dep:'5.1'},
+  {id:'5.3',  level:2, task:'Project proposal document (.docx)',                               phase:'Phase 5', domain:'Documentation', deliverable:'Proposal finalized and formatted', start:'Mar 20', end:'Mar 23', status:'Complete',   dep:''},
+  {id:'5.4',  level:2, task:'Presentation slides — problem statement, architecture, OOP principles', phase:'Phase 5', domain:'Documentation', deliverable:'Slide deck ready for 5-minute presentation', start:'Mar 24', end:'Mar 28', status:'In progress', dep:'5.2'},
+  {id:'5.5',  level:2, task:'PM documentation — WBS, Gantt, Risk Register, RACI, Critical Path',phase:'Phase 5', domain:'Documentation', deliverable:'Full PM documentation package', start:'Mar 24', end:'Mar 28', status:'In progress', dep:''},
+  {id:'5.6',  level:2, task:'Final review — all deliverables verified against requirements',    phase:'Phase 5', domain:'Documentation', deliverable:'All items confirmed complete', start:'Mar 29', end:'Mar 31', status:'Planned', dep:'5.4,5.5'},
+  {id:'5.7',  level:2, task:'GitHub submission — complete project folder, not zipped',         phase:'Phase 5', domain:'Documentation', deliverable:'Project submitted and accessible on GitHub', start:'Apr 1',  end:'Apr 1',  status:'Planned', dep:'5.6'},
+  {id:'M5',   level:1, task:'Milestone — Project delivered',                                   phase:'Phase 5', domain:'Documentation', deliverable:'All deliverables submitted on time', start:'Apr 1',  end:'Apr 1',  status:'Planned', dep:'5.7'},
+];
+
+const STATUS_CLASS = { 'Complete':'s-complete', 'In progress':'s-inprogress', 'Planned':'s-planned' };
+
+let allExpanded = true;
+let collapsedPhases = new Set();
+
+function buildStats(){
+  const tasks = DATA.filter(r=>r.level===2);
+  const el = document.getElementById('stats');
+  el.innerHTML = [
+    ['Total tasks',   tasks.length,                                          '#1b3a1b'],
+    ['Complete',      tasks.filter(r=>r.status==='Complete').length,         '#3B6D11'],
+    ['In progress',   tasks.filter(r=>r.status==='In progress').length,      '#854F0B'],
+    ['Planned',       tasks.filter(r=>r.status==='Planned').length,          '#185FA5'],
+    ['Sync points',   DATA.filter(r=>r.sync).length,                         '#a32d2d'],
+  ].map(([l,v,c])=>`<div class="stat"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-lbl">${l}</div></div>`).join('');
+}
+
+function domainBadge(domain){
+  const cls = DOMAIN_CLASS[domain] || 'd-shared';
+  return `<span class="domain-badge ${cls}">${domain}</span>`;
+}
+
+function statusPill(status, level){
+  if(level===0) return `<span class="s-phase">${status}</span>`;
+  const cls = STATUS_CLASS[status] || '';
+  return `<span class="status-pill ${cls}">${status}</span>`;
+}
+
+function buildTable(phaseFilter='all', domainFilter='all', statusFilter='all', search=''){
+  const tbody = document.getElementById('wbs-body');
+  let html = '';
+  let visible = 0;
+
+  DATA.forEach(row=>{
+    const matchPhase  = phaseFilter==='all'  || row.phase===phaseFilter;
+    const matchDomain = domainFilter==='all' || row.domain===domainFilter;
+    const matchStatus = statusFilter==='all' || row.status===statusFilter;
+    const matchSearch = search==='' || row.task.toLowerCase().includes(search.toLowerCase()) || row.deliverable.toLowerCase().includes(search.toLowerCase());
+    const show = matchPhase && matchDomain && matchStatus && matchSearch;
+
+    if(show && row.level!==0) visible++;
+
+    const lvlCls = `level-${row.level}`;
+    const hidCls = show ? '' : ' hidden';
+    const isMile = row.id.startsWith('M');
+
+    let taskCell = '';
+    if(row.level===0){
+      taskCell = `<strong>${row.task}</strong>`;
+    } else if(isMile){
+      taskCell = `<strong>◆ ${row.task}</strong>`;
+    } else if(row.level===1){
+      taskCell = `<strong>${row.task}</strong>`;
+    } else {
+      const syncBadge = row.sync ? '<span class="sync-badge">SYNC</span>' : '';
+      taskCell = `${row.task}${syncBadge}`;
+    }
+
+    const domainCell = row.level===0 ? '' : domainBadge(row.domain);
+    const statusCell = row.level===0 ? statusPill(row.status, 0) : statusPill(row.status, 1);
+
+    html += `<tr class="${lvlCls}${hidCls}" data-phase="${row.phase}" data-id="${row.id}">
+      <td class="wbs-id">${row.id}</td>
+      <td class="wbs-task">${taskCell}</td>
+      <td class="wbs-phase" style="font-size:11px;color:${row.level===0?'rgba(255,255,255,0.8)':'var(--text3)'}">${row.level===0?'':row.phase}</td>
+      <td class="wbs-domain">${domainCell}</td>
+      <td class="wbs-deliverable">${row.deliverable}</td>
+      <td class="wbs-start">${row.start}</td>
+      <td class="wbs-end">${row.end}</td>
+      <td class="wbs-status">${statusCell}</td>
+      <td class="wbs-dep">${row.dep||'—'}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = html;
+  document.getElementById('no-results').style.display = visible===0 && (phaseFilter!=='all'||domainFilter!=='all'||statusFilter!=='all'||search!=='') ? 'block' : 'none';
+}
+
+function toggleAll(){
+  allExpanded = !allExpanded;
+  const btn = document.getElementById('btn-expand');
+  btn.textContent = allExpanded ? 'Collapse all' : 'Expand all';
+
+  document.querySelectorAll('tr.level-2, tr.level-1').forEach(tr=>{
+    if(allExpanded){
+      tr.classList.remove('hidden');
+    } else {
+      tr.classList.add('hidden');
+    }
+  });
+}
+
+function resetFilters(){
+  document.getElementById('f-phase').value='all';
+  document.getElementById('f-domain').value='all';
+  document.getElementById('f-status').value='all';
+  document.getElementById('f-search').value='';
+  buildTable();
+}
+
+function applyFilters(){
+  buildTable(
+    document.getElementById('f-phase').value,
+    document.getElementById('f-domain').value,
+    document.getElementById('f-status').value,
+    document.getElementById('f-search').value
+  );
+}
+
+['f-phase','f-domain','f-status'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', applyFilters);
+});
+document.getElementById('f-search').addEventListener('input', applyFilters);
+
+buildStats();
+buildTable();
+</script>
+</body>
+</html>
