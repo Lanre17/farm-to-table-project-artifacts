@@ -1,40 +1,162 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Farm-to-Table Project Artifacts</title>
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      padding: 40px;
-      background: #f8f9fa;
+      background: #f4f6f8;
+      color: #1f2933;
     }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+    }
+
+    .header {
+      background: #ffffff;
+      border: 1px solid #d9e2ec;
+      border-left: 6px solid #2e5c1e;
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
     h1 {
+      margin: 0 0 12px;
+      font-size: 38px;
       color: #2e5c1e;
     }
-    p {
-      max-width: 600px;
-      color: #333;
-    }
-    a {
-      display: block;
-      margin: 15px 0;
+
+    .subtitle {
+      margin: 0;
+      max-width: 760px;
       font-size: 18px;
+      line-height: 1.6;
+      color: #52606d;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 16px;
+      color: #102a43;
+    }
+
+    .artifact-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .artifact-card {
+      display: block;
+      background: #ffffff;
+      border: 1px solid #d9e2ec;
+      border-radius: 8px;
+      padding: 18px 20px;
       text-decoration: none;
-      color: #1a73e8;
+      color: inherit;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .artifact-card:hover {
+      border-color: #9fb3c8;
+      box-shadow: 0 4px 12px rgba(16, 42, 67, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .artifact-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1d4ed8;
+      margin-bottom: 6px;
+    }
+
+    .artifact-desc {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #52606d;
+    }
+
+    .footer {
+      margin-top: 32px;
+      font-size: 14px;
+      color: #7b8794;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 28px 16px 40px;
+      }
+
+      .header {
+        padding: 22px 20px;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      .subtitle {
+        font-size: 16px;
+      }
+
+      .artifact-title {
+        font-size: 18px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <div class="header">
+      <h1>Farm-to-Table Project Artifacts</h1>
+      <p class="subtitle">
+        This portfolio presents project management deliverables developed for a multi-enterprise SaaS implementation project, demonstrating structured planning, governance, stakeholder coordination, and delivery oversight.
+      </p>
+    </div>
 
-<h1>Farm-to-Table Project Artifacts</h1>
+    <div>
+      <div class="section-title">Project Deliverables</div>
 
-<p>
-This page showcases project management deliverables for a multi-enterprise SaaS implementation project,
-including risk tracking and schedule management artifacts.
-</p>
+      <div class="artifact-grid">
+        <a class="artifact-card" href="risk-register.html">
+          <div class="artifact-title">📊 Risk Register</div>
+          <div class="artifact-desc">Risk identification, assessment, mitigation planning, and ongoing tracking.</div>
+        </a>
 
-<a href="risk-register.html">📊 Risk Register</a>
-<a href="project-schedule.html">📅 Project Schedule (Gantt)</a>
+        <a class="artifact-card" href="project-schedule.html">
+          <div class="artifact-title">📅 Project Schedule (Gantt)</div>
+          <div class="artifact-desc">Milestones, dependencies, workstreams, and delivery timeline visualization.</div>
+        </a>
 
+        <a class="artifact-card" href="project_charter.html">
+          <div class="artifact-title">📄 Project Charter</div>
+          <div class="artifact-desc">Project purpose, scope, objectives, stakeholders, and success criteria.</div>
+        </a>
+
+        <a class="artifact-card" href="RACI.html">
+          <div class="artifact-title">👥 RACI Matrix</div>
+          <div class="artifact-desc">Defined roles, responsibilities, and accountability across project stakeholders.</div>
+        </a>
+
+        <a class="artifact-card" href="WBS.html">
+          <div class="artifact-title">🧩 Work Breakdown Structure (WBS)</div>
+          <div class="artifact-desc">Structured decomposition of project scope into phases, deliverables, and work packages.</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer">
+      Portfolio site for project management documentation and delivery artifacts.
+    </div>
+  </div>
 </body>
 </html>
